@@ -47,7 +47,7 @@ Unlike a ministry directory, generic checklist, or chatbot answer, the product m
 
 ## Brand Commitments
 
-The user explicitly pinned the visual and interaction reference to the Software Architect roadmap on roadmap.sh. Match its information architecture and working grammar at high fidelity: a dark utility header, centered document-like canvas, compact outlined nodes, a strong vertical dependency spine with branches, clear state colors, pan/zoom, and a substantial task-detail sheet. Do not copy roadmap.sh branding, copy, ads, account prompts, or community features.
+The user explicitly pinned the generated roadmap/journey workspace to the Software Architect roadmap on roadmap.sh. Match that workspace's information architecture and working grammar at high fidelity: a centered document-like canvas, compact outlined nodes, a strong vertical dependency spine with branches, clear state colors, pan/zoom, and a substantial task-detail sheet. This reference does not govern the landing page, site header, discovery, intake, or other surrounding product surfaces; those must be purpose-built for the government navigator. Do not copy roadmap.sh branding, copy, ads, account prompts, or community features.
 
 The product voice is plain, direct, calm, and specific. Explain uncertainty rather than hiding it. Avoid legalistic performance and celebratory gamification.
 

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Turn the verified headless India government-outcome engine into a working roadmap.sh-inspired web app where users discover an outcome, answer graph-changing questions, navigate a dependency roadmap, inspect verified portal journeys, and track completion.
+**Goal:** Turn the verified headless India government-outcome engine into a working web app where users discover an outcome, answer graph-changing questions, navigate a roadmap.sh-style dependency workspace, inspect verified portal journeys, and track completion.
 
 **Architecture:** Preserve `src/` as the framework-independent, fail-closed domain core. Add a Next.js App Router web shell in `src/app`, a server-only application singleton that uses `FileRoadmapRepository`, thin route handlers that validate JSON at the boundary, and client components only for interactive selection, intake, graph navigation, and task progress. The graph projection converts `RoadmapTask.dependencies` into React Flow nodes/edges and lays them out top-to-bottom with Dagre. Standard interface primitives come from shadcn/ui; project-specific roadmap nodes and edges remain domain components.
 
@@ -15,7 +15,7 @@
 - Never expose `node:fs`, raw pack loading, user answers, or proof confirmation in client bundles or share responses.
 - Do not revive the stashed Convex work. No authentication, live AI provider, uploads, portal automation, payments, admin CMS, or application submission.
 - Use `pnpm`, not npm. Add shadcn components through the CLI and customise their checked-in source; do not recreate standard primitives.
-- Use the roadmap.sh Software Architect page as a layout and interaction reference, not as a source of branding or copy.
+- Use the roadmap.sh Software Architect page only as the layout and interaction reference for the generated roadmap/journey workspace. Discovery, intake, the site shell, and other surrounding surfaces are purpose-built for this product. Never use roadmap.sh as a source of branding or copy.
 - Every API returns a stable JSON envelope: `{ data: T }` on success; `{ error: { code, message, fieldErrors? } }` on failure.
 - Every task follows red-green-refactor where meaningful, runs its focused tests, runs `pnpm check`, and leaves the tree clean after its commit.
 - Before starting any dev server, inspect existing Node processes and listeners, reuse a compatible instance, and track/clean only task-owned processes.
@@ -29,7 +29,7 @@
 - The roadmap shows the applicable path by default, preserves excluded-task reasoning, and uses dependencies instead of a forced checklist.
 - A node opens a detailed journey surface with action, reason, authority, prerequisites, information/documents, exact steps, official links, evidence, blockers, help, and proof.
 - Progress is private local demo state. Sharing is a redacted read-only JSON/export seam, not a public collaborative account feature.
-- The reference UI is pinned: restrained light document canvas, dark navy header, black outlined nodes, yellow active/primary nodes, gray future nodes, green completed nodes, pale red action-required nodes, blue dependency connectors, right-side detail sheet on desktop, full-height sheet on mobile.
+- The roadmap workspace reference is pinned: restrained light document canvas, compact controls, black outlined nodes, yellow active/primary nodes, gray future nodes, green completed nodes, pale red action-required nodes, blue dependency connectors, right-side detail sheet on desktop, and full-height sheet on mobile. The rest of the product does not imitate roadmap.sh.
 - The app is functional without a model provider. A future AI provider may interpret intent and propose approved registry IDs but cannot invent tasks or claims.
 
 ## Public application contracts
@@ -246,7 +246,7 @@ One node represents one `RoadmapTask`; each dependency becomes an edge from depe
 - Completion is proof-gated; unknown and unsupported information remains visible and fail-closed.
 - Private answers do not appear in share output.
 - Desktop, mobile, keyboard, reduced-motion, and linear-view paths are verified.
-- The roadmap.sh visual/interaction grammar is recognisable without copied branding.
+- The generated roadmap/journey workspace has recognisable roadmap.sh visual and interaction grammar without copied branding; surrounding product surfaces remain purpose-built.
 - shadcn owns standard controls and overlays.
 - Tests and production build pass.
 - DESIGN.md records the shipped system.
