@@ -57,6 +57,11 @@ export type {
 
 export { REGISTRY_SCHEMA_VERSION } from "./domain.js";
 export type {
+  ApiErrorBody,
+  ApiErrorEnvelope,
+  ApiSuccessEnvelope,
+} from "./lib/api.js";
+export type {
   AnswerValue,
   Answers,
   Applicability,
