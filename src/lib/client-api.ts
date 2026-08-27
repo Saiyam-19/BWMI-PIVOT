@@ -1,4 +1,9 @@
-import type { AnswerValue, EntryPoint } from "../domain.js";
+import type {
+  AnswerValue,
+  EntryPoint,
+  Roadmap,
+  TaskTransition,
+} from "../domain.js";
 import type { PublicOutcomeSummary } from "../server/navigator.js";
 
 export interface OutcomeCatalog {
@@ -111,4 +116,20 @@ export async function updateRoadmapAnswers(
     },
   );
   return decodeEnvelope<ClientRoadmap>(response);
+}
+
+export async function transitionRoadmapTask(
+  roadmapId: string,
+  taskId: string,
+  transition: TaskTransition,
+): Promise<Roadmap> {
+  const response = await fetch(
+    `/api/roadmaps/${encodeURIComponent(roadmapId)}/tasks/${encodeURIComponent(taskId)}`,
+    {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(transition),
+    },
+  );
+  return decodeEnvelope<Roadmap>(response);
 }

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@xyflow/react/dist/style.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -57,5 +58,52 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+.roadmap-canvas .react-flow__node {
+  border-radius: 0;
+}
+
+.roadmap-canvas .react-flow__controls {
+  overflow: hidden;
+  border: 1px solid #94a3b8;
+  border-radius: 0;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.1);
+}
+
+.roadmap-canvas .react-flow__controls-button {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-bottom-color: #cbd5e1;
+  color: #172033;
+}
+
+.roadmap-canvas .react-flow__controls-button:focus-visible {
+  outline: 3px solid rgb(36 84 166 / 0.35);
+  outline-offset: -3px;
+}
+
+.roadmap-canvas .react-flow__attribution {
+  display: none;
+}
+
+.roadmap-handle {
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roadmap-canvas *,
+  .roadmap-canvas *::before,
+  .roadmap-canvas *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

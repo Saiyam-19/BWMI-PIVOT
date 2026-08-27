@@ -6,11 +6,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 const directionContract = `
-THESIS: Outcome discovery starts from the result a person needs; this surface refuses the ministry directory and generic chatbot prompt.
-OWN-WORLD: Clear Indian government-service baseline: white and pale-slate surfaces, navy utility and primary controls, service blue for focus and links, and restrained shadcn fields with explicit states.
-STORY: State the outcome, see supported paths, answer only graph-changing questions, and enter a private evidence-linked roadmap without hidden certainty.
-FIRST VIEWPORT: Navy utility header above a generous service page; the mechanism headline and natural-language field dominate, with the primary action beside the field and supported outcomes immediately below.
-FORM: Purpose-built government-service discovery and intake; seed key government-outcome-discovery. The roadmap.sh reference is reserved for the generated roadmap workspace canvas, dependency layout, nodes, connectors, navigation, and node-detail interaction.
+THESIS: Start from the citizen or business outcome, then make every truthful dependency and the next safe government action visible without invented certainty.
+OWN-WORLD: Preserve the purpose-built Indian government-service shell: navy utility, white and pale-slate documents, service-blue focus and links, and restrained shadcn controls. Inside generated roadmaps only, use the pinned roadmap.sh interaction grammar with a tall centered canvas, compact black-outlined state nodes, blue connectors, and a substantial right-side journey sheet.
+STORY: Discover an outcome, answer only graph-changing questions, scan the whole consequence graph, open a task for exact verified portal or offline steps, confirm its completion proof, and continue along newly ready dependencies.
+FIRST VIEWPORT: The existing navy government-service header leads into a concise roadmap title and truthful progress summary; canvas and linear tabs immediately reveal the vertical dependency spine while fail-closed nodes remain conspicuous.
+FORM: Operate mode. The site shell remains government-specific; the generated roadmap workspace alone adopts the Software Architect reference's document-canvas density, branches, navigation, node selection, state hierarchy, and right-side detail interaction without its branding or content.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
 `.trim();
 
