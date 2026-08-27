@@ -1,0 +1,787 @@
+{
+  "review_metadata": {
+    "review_date": "2026-08-28",
+    "reviewer_independence": "Stream 8 did not author streams 1-7",
+    "overall_verdict": "CONDITIONAL_PASS",
+    "revision": "rolling-v2-post-checkpoint-delta",
+    "revision_base": "outputs/checkpoints/2026-08-28T0201-IST-v1",
+    "current_validation_report": "outputs/validation-report.json",
+    "checkpoint_history_note": "Root sampled_claims and SC-001 through SC-DECL-07 preserve the immutable checkpoint audit. Current delta dispositions, including resolved NPS/postal conflicts and ESI remittance treatment, are in post_checkpoint_delta and control for rolling v2.",
+    "contract": "work/INDEPENDENT_REVIEW_CONTRACT.md",
+    "packs_reviewed": [
+      "outputs/packs/01-import-regulated-product.json",
+      "outputs/packs/02-export-first-order.json",
+      "outputs/packs/03-incorporate-and-hire.json",
+      "outputs/packs/04-central-procurement-first-bid.json",
+      "outputs/packs/05-deceased-assets.json",
+      "outputs/packs/06-cyber-financial-fraud.json",
+      "outputs/packs/07-reusable-foundations.json"
+    ],
+    "method": "The immutable checkpoint review remains the evidence base for unchanged material. Rolling-v2 independently inspected every added or materially changed high-risk claim, a deterministic sample of other new Verified claims, affected reusable cross-pack claims, and current machine integrity; unchanged checkpoint evidence was not re-reviewed."
+  },
+  "pack_verdicts": [
+    {
+      "pack_id": "journey.import-regulated-product.india",
+      "verdict": "CONDITIONAL_PASS",
+      "open_finding_ids": [],
+      "resolved_finding_ids": ["IER-001", "IER-002"],
+      "gap_count": 14,
+      "rationale": "Battery EPR marking and the current BIS Scheme-II route are now explicit outcome dependencies. Remaining product, port, WPC, PQMS, duty and portal uncertainties are fail-closed."
+    },
+    {
+      "pack_id": "india.export.first-goods-order",
+      "verdict": "CONDITIONAL_PASS",
+      "open_finding_ids": [],
+      "resolved_finding_ids": [],
+      "gap_count": 8,
+      "rationale": "Current DGFT, ICEGATE, GST and RBI evidence supports the generic route; shipment classification, foreign-country requirements, refund entitlement and private charges remain gated."
+    },
+    {
+      "pack_id": "journey3.incorporate-hire.india-central",
+      "verdict": "CONDITIONAL_PASS",
+      "open_finding_ids": [],
+      "resolved_finding_ids": ["IER-004", "IER-009", "IER-010"],
+      "gap_count": 6,
+      "rationale": "Current substantive EPF/ESI law is supported, ESI Regulation 31's saved status was independently confirmed, and the replacement EPFO Revamped ECR page supports only the stated operational mechanics."
+    },
+    {
+      "pack_id": "gon.central-procurement.first-bid.v1",
+      "verdict": "CONDITIONAL_PASS",
+      "open_finding_ids": [],
+      "resolved_finding_ids": ["IER-007"],
+      "gap_count": 8,
+      "rationale": "The stated outcome is now a portal-received frozen bid, not a valid/responsive/awarded bid. Current GeM transaction details and the bounded demo tender remain unavailable and blocked from the happy path."
+    },
+    {
+      "pack_id": "journey.05.deceased-assets",
+      "verdict": "CONDITIONAL_PASS",
+      "open_finding_ids": [],
+      "resolved_finding_ids": ["IER-005", "IER-011"],
+      "gap_count": 11,
+      "rationale": "New grievance and claim clocks are supported, NPS/postal threshold conflicts were correctly resolved, and the replacement live IRDAI section-39 source supports the bounded life-insurance nominee entitlement."
+    },
+    {
+      "pack_id": "india.cyber-financial-fraud.v1",
+      "verdict": "CONDITIONAL_PASS",
+      "open_finding_ids": [],
+      "resolved_finding_ids": [],
+      "gap_count": 7,
+      "rationale": "Urgent reporting, bank/payment-system treatment and RB-IOS escalation are bounded by current official evidence. No universal recovery promise, nationwide 24-hour completion rule or victim-authorised-transfer liability conclusion is made."
+    },
+    {
+      "pack_id": "in.central.reusable-foundations.v1",
+      "verdict": "CONDITIONAL_PASS",
+      "open_finding_ids": [],
+      "resolved_finding_ids": ["IER-003", "IER-006", "IER-008"],
+      "gap_count": 8,
+      "rationale": "EPFO coverage now follows the current Code and the submission route remains Candidate where the portal lags. GST signature ambiguity, ICEGATE/GeM login detail and downstream consumer contracts remain gated."
+    }
+  ],
+  "coverage_matrix": [
+    {
+      "pack_id": "journey.import-regulated-product.india",
+      "source_authority": "PASS",
+      "atomicity_and_locator": "PASS",
+      "temporal_validity": "CONDITIONAL",
+      "dependency_completeness": "CONDITIONAL",
+      "fail_closed": "PASS",
+      "jurisdiction": "PASS",
+      "public_private_provenance": "PASS",
+      "cross_pack_consistency": "PASS",
+      "scenario_boundedness": "PASS",
+      "machine_integrity": "PASS"
+    },
+    {
+      "pack_id": "india.export.first-goods-order",
+      "source_authority": "PASS",
+      "atomicity_and_locator": "PASS",
+      "temporal_validity": "PASS",
+      "dependency_completeness": "CONDITIONAL",
+      "fail_closed": "PASS",
+      "jurisdiction": "PASS",
+      "public_private_provenance": "PASS",
+      "cross_pack_consistency": "PASS",
+      "scenario_boundedness": "PASS",
+      "machine_integrity": "PASS"
+    },
+    {
+      "pack_id": "journey3.incorporate-hire.india-central",
+      "source_authority": "PASS",
+      "atomicity_and_locator": "PASS",
+      "temporal_validity": "CONDITIONAL",
+      "dependency_completeness": "CONDITIONAL",
+      "fail_closed": "PASS",
+      "jurisdiction": "PASS",
+      "public_private_provenance": "PASS",
+      "cross_pack_consistency": "PASS",
+      "scenario_boundedness": "PASS",
+      "machine_integrity": "PASS"
+    },
+    {
+      "pack_id": "gon.central-procurement.first-bid.v1",
+      "source_authority": "CONDITIONAL",
+      "atomicity_and_locator": "PASS",
+      "temporal_validity": "CONDITIONAL",
+      "dependency_completeness": "CONDITIONAL",
+      "fail_closed": "PASS",
+      "jurisdiction": "PASS",
+      "public_private_provenance": "PASS",
+      "cross_pack_consistency": "PASS",
+      "scenario_boundedness": "PASS",
+      "machine_integrity": "PASS"
+    },
+    {
+      "pack_id": "journey.05.deceased-assets",
+      "source_authority": "PASS",
+      "atomicity_and_locator": "PASS",
+      "temporal_validity": "CONDITIONAL",
+      "dependency_completeness": "CONDITIONAL",
+      "fail_closed": "PASS",
+      "jurisdiction": "PASS",
+      "public_private_provenance": "PASS",
+      "cross_pack_consistency": "PASS",
+      "scenario_boundedness": "PASS",
+      "machine_integrity": "PASS"
+    },
+    {
+      "pack_id": "india.cyber-financial-fraud.v1",
+      "source_authority": "PASS",
+      "atomicity_and_locator": "PASS",
+      "temporal_validity": "CONDITIONAL",
+      "dependency_completeness": "CONDITIONAL",
+      "fail_closed": "PASS",
+      "jurisdiction": "PASS",
+      "public_private_provenance": "PASS",
+      "cross_pack_consistency": "PASS",
+      "scenario_boundedness": "PASS",
+      "machine_integrity": "PASS"
+    },
+    {
+      "pack_id": "in.central.reusable-foundations.v1",
+      "source_authority": "PASS",
+      "atomicity_and_locator": "PASS",
+      "temporal_validity": "CONDITIONAL",
+      "dependency_completeness": "CONDITIONAL",
+      "fail_closed": "PASS",
+      "jurisdiction": "PASS",
+      "public_private_provenance": "PASS",
+      "cross_pack_consistency": "PASS",
+      "scenario_boundedness": "PASS",
+      "machine_integrity": "PASS"
+    }
+  ],
+  "findings": [
+    {
+      "id": "IER-001",
+      "severity": "P1",
+      "status": "resolved_by_existing_gate",
+      "resolution_disposition": "resolved_by_revision",
+      "pack_id": "journey.import-regulated-product.india",
+      "task_ids": ["imp.t11", "imp.t11a", "imp.t21"],
+      "claim_ids": ["clm.battery-scope", "clm.battery-registration-marking", "clm.battery-marking-method-2025"],
+      "source_ids": ["src.battery-amendment-2023-marking", "src.battery-amendment-2025-marking"],
+      "exact_finding": "The first publication omitted the mandatory battery/battery-pack EPR registration-number marking dependency and a lot-level proof before sale release.",
+      "independent_official_evidence": [
+        {"url": "https://moef.gov.in/uploads/pdf-uploads/pdf_6765683bdda891.04112319.pdf", "locator": "S.O. 4669(E), rule 10(b), Schedule I paragraph 2(ia), PDF pp.9-10"},
+        {"url": "https://moef.gov.in/uploads/pdf-uploads/pdf_67c141239b5a22.27180537.pdf", "locator": "S.O. 958(E), rule 2(b), Schedule I paragraph 2(ib), PDF pp.2-3"}
+      ],
+      "why_it_matters": "A registered producer could still release a non-marked battery product, missing an outcome-critical legal condition.",
+      "required_safe_treatment": "Block sale release until permitted placement/method, active CPCB match, scan/readability and written CPCB notice where applicable are proved for the lot.",
+      "remediation": "Add a required marking task, proof, claims, sources and blocking edge.",
+      "resolution_basis": "The republished pack added imp.t11a, proof.battery-epr-marking and blocking edges to imp.t21; the proof checks physical/encoded number, active CPCB match, placement/method and written notice."
+    },
+    {
+      "id": "IER-002",
+      "severity": "P2",
+      "status": "resolved_by_existing_gate",
+      "resolution_disposition": "resolved_by_revision",
+      "pack_id": "journey.import-regulated-product.india",
+      "task_ids": ["imp.t08"],
+      "claim_ids": ["clm.crs-route", "clm.bis-scheme2-fees", "clm.bis-scheme2-validity"],
+      "source_ids": ["src.bis-ca-amendment-2026"],
+      "exact_finding": "The first publication did not use the operative substituted BIS Scheme II made effective on 25 February 2026.",
+      "independent_official_evidence": [{"url": "https://www.bis.gov.in/wp-content/uploads/2026/03/Gazette-Notification-1.pdf", "locator": "Notification commencement p.37; Scheme II paragraphs 1-8 pp.41-44; Forms I-V pp.49-61"}],
+      "why_it_matters": "Forms, evidence, fees and licence validity were incomplete or could be routed through superseded material.",
+      "required_safe_treatment": "Use only the current Scheme-II forms and amounts; leave shipment-specific model/factory scope and variable testing charges gated.",
+      "remediation": "Replace legacy route evidence with the 2026 regulation and atomic fee/validity claims.",
+      "resolution_basis": "The republished task uses Forms I-IV as inputs and Form V only as the grant, with current fees and five-year validity; case-specific scope remains Candidate."
+    },
+    {
+      "id": "IER-003",
+      "severity": "P1",
+      "status": "resolved_by_existing_gate",
+      "resolution_disposition": "resolved_by_revision",
+      "pack_id": "in.central.reusable-foundations.v1",
+      "task_ids": ["t.epfo.establishment"],
+      "claim_ids": ["cl.epfo.code-live", "cl.epfo.saved-schemes", "cl.epfo.coverage", "cl.epfo.route", "cl.epfo.portal-transition"],
+      "source_ids": ["src.mole.social-security-code", "src.mole.ss-rules-2026", "src.epfo.employers", "src.shram.portal", "src.shram.manual"],
+      "exact_finding": "The first publication used legacy scheduled/notified-establishment language that could exclude a non-scheduled establishment with 20 or more employees, contrary to the current Code First Schedule.",
+      "independent_official_evidence": [
+        {"url": "https://labour.gov.in/sites/default/files/ss_code_gazette.pdf", "locator": "First Schedule Part I, Chapter III row; section 164(2)(b)"},
+        {"url": "https://www.labour.gov.in/static/uploads/2026/05/49aa9b62c2125499c37399b90e969d67.pdf", "locator": "G.S.R. 344(E), rule 5, PDF pp.138-139"}
+      ],
+      "why_it_matters": "The old industry-schedule qualification could cause unlawful non-registration.",
+      "required_safe_treatment": "Treat every 20+ establishment as within the ordinary Chapter-III threshold; do not let stale portal labels narrow coverage; keep actual submission Candidate until current common Form-I is confirmed.",
+      "remediation": "Replace substantive coverage and registration claims with the current Code/Rules and mark old portal material Stale.",
+      "resolution_basis": "The republished pack does this and blocks the submission outcome on current Form-I/Form-III confirmation while keeping coverage itself Verified."
+    },
+    {
+      "id": "IER-004",
+      "severity": "P1",
+      "status": "resolved_by_existing_gate",
+      "resolution_disposition": "resolved_by_revision",
+      "pack_id": "journey3.incorporate-hire.india-central",
+      "task_ids": ["t18.epf", "t19.esi", "t22.monitor"],
+      "claim_ids": ["c.saved-schemes", "c.epf-scheme-current", "c.epf-membership", "c.epf-rate", "c.epf-remit", "c.esi-rules-current", "c.esi-insurance", "c.esi-ceiling", "c.esi-disability-conflict", "c.esi-disability-relief", "c.esi-rate", "c.esi-remit"],
+      "source_ids": ["s.epf-scheme", "s.epf-scheme-1952", "s.epf-wage-ceiling-2026", "s.ss-rules", "s.esi-rules", "s.esi-continuation-2026", "s.esi-reg31"],
+      "exact_finding": "The first publication treated 20 November 2026 as a future blanket transition checkpoint even though G.S.R. 344(E) superseded ESI Central Rules 1950 on 8 May and G.S.R. 525(E) superseded EPF Scheme 1952 on 29 June; it also carried the superseded ESI INR 21,000 ceiling.",
+      "independent_official_evidence": [
+        {"url": "https://egazette.gov.in/WriteReadData/2026/273957.pdf", "locator": "G.S.R. 525(E), opening and paragraph 1, p.66; membership paragraph 9 pp.68-69; contribution/remittance paragraphs 18-20 pp.75-77"},
+        {"url": "https://www.labour.gov.in/static/uploads/2026/05/49aa9b62c2125499c37399b90e969d67.pdf", "locator": "G.S.R. 344(E), supersession/rule 1 pp.134-135; rules 18-19 pp.159-160"},
+        {"url": "https://egazette.gov.in/WriteReadData/2026/272387.pdf", "locator": "S.O. 2351(E), p.2; confirms continuation after crossing a separately notified Chapter-IV ceiling but states no amount"}
+      ],
+      "why_it_matters": "Use of superseded membership, ceiling, rate or payment rules can under-enrol or miscalculate social-security duties.",
+      "required_safe_treatment": "Use current EPF Scheme 2026 and Social Security Rules 2026; make the unlocated current Chapter-IV ceiling and post-Code remittance rule Action Required.",
+      "remediation": "Replace operative sources/claims/tasks, mark old propositions Stale, and make ESI execution Candidate where current instruments are missing.",
+      "resolution_basis": "The republished pack adopts the current EPF and ESI rules, admits S.O. 2702(E) only for Chapter III, withholds a Chapter-IV ceiling and ESI payment deadline, and keeps the one-person non-hazardous demo outside coverage without relying on salary."
+    },
+    {
+      "id": "IER-005",
+      "severity": "P2",
+      "status": "resolved_by_existing_gate",
+      "resolution_disposition": "resolved_by_revision",
+      "pack_id": "journey.05.deceased-assets",
+      "task_ids": ["t.epf-claim", "t.eps-claim", "t.edli-claim"],
+      "claim_ids": ["c.epf-complete-20d", "c.epf-deficiency-20d", "c.epf-delay-interest", "c.eps-complete-20d", "c.eps-deficiency-20d", "c.eps-delay-interest", "c.edli-complete-20d", "c.edli-deficiency-20d", "c.edli-delay-interest"],
+      "source_ids": ["s.epf-scheme-2026", "s.epf-corrigendum-2026", "s.eps-scheme-2026", "s.eps-corrigendum-2026", "s.edli-scheme-2026", "s.edli-corrigendum-2026"],
+      "exact_finding": "The first publication omitted current statutory processing, deficiency and conditional interest provisions from all three EPFO death-claim tasks.",
+      "independent_official_evidence": [
+        {"url": "https://egazette.gov.in/WriteReadData/2026/273957.pdf", "locator": "G.S.R. 525(E), paragraph 54(7)-(9), p.94"},
+        {"url": "https://egazette.gov.in/WriteReadData/2026/273951.pdf", "locator": "G.S.R. 527(E), paragraph 17(1)-(3), pp.55-56"},
+        {"url": "https://egazette.gov.in/WriteReadData/2026/273942.pdf", "locator": "G.S.R. 526(E), paragraph 23(3)-(5), p.18"},
+        {"url": "https://egazette.gov.in/WriteReadData/2026/275186.pdf", "locator": "G.S.R. 703(E), items 1-25; target EPF paragraphs unaffected"},
+        {"url": "https://egazette.gov.in/WriteReadData/2026/275187.pdf", "locator": "G.S.R. 704(E), items 1-10; target EPS paragraphs unaffected"},
+        {"url": "https://egazette.gov.in/WriteReadData/2026/275188.pdf", "locator": "G.S.R. 705(E), items 1-9; target EDLI paragraphs unaffected"}
+      ],
+      "why_it_matters": "Claimants otherwise lack the current tracking and escalation clock and may incorrectly treat interest as automatic.",
+      "required_safe_treatment": "Track receipt/completeness, deficiency and payment dates; describe 12% only as conditional where the Commissioner lacks sufficient cause.",
+      "remediation": "Add atomic timeline/deficiency/interest claims and task tracking/escalation tied to current schemes and corrigenda.",
+      "resolution_basis": "The republished pack adds all nine atomic claims, exact locators and conditional wording; independent full-corrigenda review confirmed no target amendment."
+    },
+    {
+      "id": "IER-006",
+      "severity": "P3",
+      "status": "resolved_by_existing_gate",
+      "resolution_disposition": "resolved_by_revision",
+      "pack_id": "in.central.reusable-foundations.v1",
+      "task_ids": ["t.dsc.bind-consumer"],
+      "claim_ids": ["cl.gst.signature-old", "cl.gst.signature-evc", "cl.gst.signature-current-buttons"],
+      "source_ids": ["src.gst.welcome", "src.gst.evc", "src.gst.clarification"],
+      "exact_finding": "The GST 2021 EVC compilation was recorded accessible although its official URL returned HTTP 404 on the review date.",
+      "independent_official_evidence": [
+        {"url": "https://tutorial.gst.gov.in/downloads/news/new_functionalities_compilation_october_december_2021.pdf", "locator": "HTTP 404 on 2026-08-28; cached text is discovery-only"},
+        {"url": "https://tutorial.gst.gov.in/userguide/registration/Application_for_Filing_Clarification.htm", "locator": "Verification tab: SUBMIT WITH DSC/EVC as applicable or eligible"}
+      ],
+      "why_it_matters": "Dead-source metadata can falsely upgrade a current universal signing claim.",
+      "required_safe_treatment": "Mark the old source Unavailable and claim Stale; preserve the signature conflict and use only live transaction controls.",
+      "remediation": "Correct access/status metadata and add a current transaction-specific claim.",
+      "resolution_basis": "The republished source is Unavailable, the claim Stale, the current-buttons claim is bounded, and the conflict remains fail-closed."
+    },
+    {
+      "id": "IER-007",
+      "severity": "P3",
+      "status": "resolved_by_existing_gate",
+      "resolution_disposition": "resolved_by_revision",
+      "pack_id": "gon.central-procurement.first-bid.v1",
+      "task_ids": ["t04.submit-freeze", "t04.retain-ack"],
+      "claim_ids": ["cl.cppp-summary-proof", "cl.cppp-receipt-boundary"],
+      "source_ids": ["src.cppp-help"],
+      "exact_finding": "The first title promised a first valid bid although the pack correctly proved only receipt/storage and expressly withheld correctness, responsiveness, eligibility and award.",
+      "independent_official_evidence": [{"url": "https://eprocure.gov.in/eprocure/app?page=HelpForContractors&service=page", "locator": "Special Instructions items 19-20; bid summary is acknowledgment/proof of submission, not award or responsiveness"}],
+      "why_it_matters": "Outcome metadata overstated completion proof even though runtime gates were sound.",
+      "required_safe_treatment": "Name the outcome as a portal-received frozen bid and retain the proof boundary.",
+      "remediation": "Rename the title/heading only.",
+      "resolution_basis": "The republished title says submit and freeze a portal-received Central bid; proof and demo bounds remain consistent."
+    },
+    {
+      "id": "IER-008",
+      "severity": "P3",
+      "status": "resolved_by_existing_gate",
+      "resolution_disposition": "resolved_by_revision",
+      "pack_id": "in.central.reusable-foundations.v1",
+      "task_ids": ["t.epfo.establishment"],
+      "claim_ids": ["cl.epfo.route", "cl.epfo.registration-certificate", "cl.epfo.registration-change", "cl.epfo.registration-wrong-info-cancellation", "cl.epfo.registration-closure-cancellation"],
+      "source_ids": ["src.mole.ss-rules-2026"],
+      "exact_finding": "The first EPFO revision placed rule-5 English locators one page early.",
+      "independent_official_evidence": [{"url": "https://www.labour.gov.in/static/uploads/2026/05/49aa9b62c2125499c37399b90e969d67.pdf", "locator": "Rule 5(1)-(4) p.138; rule 5(5)-(9) p.139"}],
+      "why_it_matters": "Incorrect page locators impede independent verification.",
+      "required_safe_treatment": "Cite exact printed/PDF pages without changing the correct substantive rule.",
+      "remediation": "Correct source and claim locators to pp.138-139.",
+      "resolution_basis": "Republished JSON and Markdown now cite p.138 for route/certificate/show-cause and p.139 for changes/closure."
+    },
+    {
+      "id": "IER-009",
+      "severity": "P3",
+      "status": "resolved_by_existing_gate",
+      "resolution_disposition": "resolved_by_revision",
+      "pack_id": "journey3.incorporate-hire.india-central",
+      "task_ids": ["t19.esi"],
+      "claim_ids": ["c.social-registration", "c.esi-rules-current", "c.esi-insurance", "c.esi-disability-conflict", "c.esi-disability-relief", "c.esi-rate"],
+      "source_ids": ["s.ss-rules"],
+      "exact_finding": "The first social-security revision placed several G.S.R. 344(E) English locators one page early.",
+      "independent_official_evidence": [{"url": "https://www.labour.gov.in/static/uploads/2026/05/49aa9b62c2125499c37399b90e969d67.pdf", "locator": "English notification/rule 1 pp.134-135; rule 5 pp.138-139; rule 18 p.159; rule 19 pp.159-160"}],
+      "why_it_matters": "Incorrect locators reduce traceability for current eligibility and contribution rules.",
+      "required_safe_treatment": "Correct page locators while preserving the substantive current-law treatment.",
+      "remediation": "Correct the source and six affected claim locators.",
+      "resolution_basis": "The final republished pack matches independent extraction at all cited pages."
+    },
+    {
+      "id": "IER-010",
+      "severity": "P2",
+      "status": "resolved_by_existing_gate",
+      "resolution_disposition": "resolved_by_revision",
+      "pack_id": "journey3.incorporate-hire.india-central",
+      "task_ids": ["t18.epf"],
+      "claim_ids": ["c.epf-portal-current"],
+      "source_ids": ["s.epfo-ecr-revamp"],
+      "exact_finding": "The newly admitted EPFO ECR-revamp source is marked accessible, but its exact official URL redirects to epfo.gov.in and returns HTTP 404 on 2026-08-28.",
+      "independent_official_evidence": [{"url": "https://www.epfindia.gov.in/site_docs/PDFs/Circulars/Y2025-2026/ECRRevamp_26092025.pdf", "locator": "HTTP 301 to epfo.gov.in followed by HTTP 404 on 2026-08-28"}],
+      "why_it_matters": "The claim adds current regular, supplementary and revision ECR mechanics to an actionable EPF task, but the cited evidence cannot be reopened from the published record.",
+      "required_safe_treatment": "Replace the dead official URL with an accessible current primary source or downgrade the ECR-mechanics proposition to Candidate; do not let it establish substantive eligibility, rate or due-date rules.",
+      "remediation": "Correct source access metadata/URL and reverify the claim locator and task proof against the replacement official source.",
+      "resolution_basis": "The republished source now uses https://www.epfo.gov.in/revamped-ecr/ and records the old PDF as 404. Independent HTTP-200 inspection confirmed the page's September-2025-onward scope, return/payment segregation, validation, damages/interest and conditional-revision bullets plus current manual/FAQ links; the claim remains operational only."
+    },
+    {
+      "id": "IER-011",
+      "severity": "P1",
+      "status": "resolved_by_existing_gate",
+      "resolution_disposition": "resolved_by_revision",
+      "pack_id": "journey.05.deceased-assets",
+      "task_ids": ["t.route-claimant", "t.insurance-claim"],
+      "claim_ids": ["c.insurance-beneficial-nominee"],
+      "source_ids": ["s.insurance-act-1938"],
+      "exact_finding": "The first rolling-v2 publication used a 404 India Code bitstream as the sole source for a high-risk life-insurance nominee entitlement claim.",
+      "independent_official_evidence": [{"url": "https://noc.irdai.gov.in/Content/docs/Insurance%20Act%2C1938%20-%20incorporating%20all%20amendments%20till%2020212021-08-12.pdf", "locator": "Insurance Act section 39(6)-(12), printed pp.54-55; subsection (7) on printed p.55"}],
+      "why_it_matters": "A claimant-routing entitlement cannot remain Verified when its sole published authority cannot be reopened.",
+      "required_safe_treatment": "Do not automate beneficial entitlement until a live current official section-39 source and its statutory qualifications are admitted.",
+      "remediation": "Replace the dead source and independently reverify subsection (7) with its creditor, assignment and statutory-exception boundaries.",
+      "resolution_basis": "The republished source now points to an accessible official IRDAI consolidation. Independent extraction confirmed section 39(7) and adjacent subsections (6)-(12); the claim remains narrowly bounded and does not generalise beyond life insurance."
+    }
+  ],
+  "cross_pack_conflicts": [
+    {
+      "id": "XPK-001",
+      "status": "resolved_by_existing_gate",
+      "packs": ["journey3.incorporate-hire.india-central", "in.central.reusable-foundations.v1"],
+      "topic": "EPFO establishment coverage and registration transition",
+      "claim_ids": ["c.epf-threshold", "c.epf-scheme-current", "cl.epfo.coverage", "cl.epfo.route", "cl.epfo.portal-transition"],
+      "finding": "The initial foundations pack retained old scheduled-industry coverage while the company/hire pack used the current Code First Schedule. Both final packs now use every establishment with 20+ employees as the ordinary Chapter-III threshold and gate lagging portal implementation.",
+      "independent_official_url": "https://labour.gov.in/sites/default/files/ss_code_gazette.pdf",
+      "locator": "First Schedule Part I, Chapter III row"
+    }
+  ],
+  "sampled_claims": [
+    {
+      "pack_id": "journey.import-regulated-product.india",
+      "selection_seed": 20260829,
+      "claim_ids": ["clm.import-igst", "clm.gst-route", "clm.bis-public-check", "clm.battery-scope", "clm.be-tracking"],
+      "source_ids": ["src.customs-tariff-s3", "src.gst-registration-tutorial", "src.gst-clarification", "src.gst-certificate", "src.crs-public-search", "src.battery-rules-2022", "src.battery-amendment-2023", "src.cpcb-battery-portal", "src.icegate-be-status"],
+      "result": "PASS"
+    },
+    {
+      "pack_id": "india.export.first-goods-order",
+      "selection_seed": 20260830,
+      "claim_ids": ["claim.docs-minimum", "claim.gst-refund-portal", "claim.rbi-overdue", "claim.ebrc-self", "claim.customs-rms-leo"],
+      "source_ids": ["src.ftp-chapter2-current", "src.gst-refund-guide", "src.rbi-export-direction", "src.ebrc-manual-v1-2", "src.customs-manual2025"],
+      "result": "PASS"
+    },
+    {
+      "pack_id": "journey3.incorporate-hire.india-central",
+      "selection_seed": 20260831,
+      "claim_ids": ["c.esi-insurance", "c.posh-local", "c.first-auditor", "c.osh-appointment", "c.wage-payment"],
+      "source_ids": ["s.social-security-code", "s.ss-rules", "s.posh-act", "s.companies-act-current", "s.osh-code", "s.wages-code"],
+      "result": "PASS"
+    },
+    {
+      "pack_id": "gon.central-procurement.first-bid.v1",
+      "selection_seed": 20260832,
+      "claim_ids": ["cl.cppp-server-clock", "cl.cppp-receipt-boundary", "cl.cppp-boq", "cl.startup-relaxation", "cl.cppp-helpdesk"],
+      "source_ids": ["src.cppp-help", "src.ncs2025", "src.gfr2026", "src.cppp-contact"],
+      "result": "PASS"
+    },
+    {
+      "pack_id": "journey.05.deceased-assets",
+      "selection_seed": 20260833,
+      "claim_ids": ["c.udgam-not-claim", "c.dea-ten-years", "c.nps-nongov-death", "c.rbi-ombudsman", "c.mitra-boundary"],
+      "source_ids": ["s.rbi-udgam-faq", "s.rbi-dea-faq", "s.pfrda-regs-2026", "s.rbi-ombudsman-2026", "s.sebi-mitra"],
+      "result": "PASS"
+    },
+    {
+      "pack_id": "india.cyber-financial-fraud.v1",
+      "selection_seed": 20260834,
+      "claim_ids": ["cf.c08", "cf.c40", "cf.c14", "cf.c27", "cf.c23"],
+      "source_ids": ["cf.s02", "cf.s04", "cf.s11", "cf.s06", "cf.s07", "cf.s08"],
+      "result": "PASS"
+    },
+    {
+      "pack_id": "in.central.reusable-foundations.v1",
+      "selection_seed": 20260835,
+      "claim_ids": ["cl.udyam.one-registration", "cl.gst.aadhaar", "cl.epfo.coverage", "cl.gst.signature-current-buttons", "cl.tan.know"],
+      "source_ids": ["src.udyam.notification", "src.gst.aadhaar", "src.mole.social-security-code", "src.mole.labour-compliance-handbook", "src.gst.clarification", "src.itd.know-tan"],
+      "result": "PASS"
+    }
+  ],
+  "source_checks": [
+    {
+      "id": "SC-001",
+      "pack_id": "journey.import-regulated-product.india",
+      "claim_ids": ["clm.battery-registration-marking", "clm.battery-marking-method-2025"],
+      "source_ids": ["src.battery-amendment-2023-marking", "src.battery-amendment-2025-marking"],
+      "official_url": "https://moef.gov.in/uploads/pdf-uploads/pdf_6765683bdda891.04112319.pdf",
+      "locator": "S.O. 4669(E), Schedule I paragraph 2(ia), pp.9-10; read with S.O. 958(E), paragraph 2(ib), pp.2-3",
+      "result": "PASS",
+      "note": "Exact marking duty, deadline and permitted alternative methods independently confirmed."
+    },
+    {
+      "id": "SC-002",
+      "pack_id": "journey.import-regulated-product.india",
+      "claim_ids": ["clm.crs-route", "clm.bis-scheme2-fees", "clm.bis-scheme2-validity"],
+      "source_ids": ["src.bis-ca-amendment-2026"],
+      "official_url": "https://www.bis.gov.in/wp-content/uploads/2026/03/Gazette-Notification-1.pdf",
+      "locator": "Scheme II paragraphs 3, 5 and 8, pp.41-44; Forms I-V pp.49-61",
+      "result": "PASS",
+      "note": "Current forms, fixed fees and validity independently confirmed."
+    },
+    {
+      "id": "SC-003",
+      "pack_id": "india.export.first-goods-order",
+      "claim_ids": ["claim.rbi-realisation-nine", "claim.rbi-advance-three", "claim.rbi-documents-21", "claim.rbi-extension", "claim.rbi-writeoff"],
+      "source_ids": ["src.rbi-export-direction"],
+      "official_url": "https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id=10395",
+      "locator": "A.2(i), B.1-B.2, C.2, C.20 and C.23; updated through 17 July 2026",
+      "result": "PASS",
+      "note": "Realisation, advance-shipment, document-lodgement, extension and write-off propositions match the current RBI direction."
+    },
+    {
+      "id": "SC-004",
+      "pack_id": "journey3.incorporate-hire.india-central",
+      "claim_ids": ["c.epf-scheme-current", "c.epf-membership", "c.epf-rate", "c.epf-remit"],
+      "source_ids": ["s.epf-scheme", "s.epf-wage-ceiling-2026"],
+      "official_url": "https://egazette.gov.in/WriteReadData/2026/273957.pdf",
+      "locator": "G.S.R. 525(E), opening/paragraph 1 p.66; paragraph 9 pp.68-69; paragraphs 18-20 pp.75-77",
+      "result": "PASS",
+      "note": "Scheme supersession, membership, rates and remittance checked directly; S.O. 2702(E) supplies INR 15,000 only for Chapter III."
+    },
+    {
+      "id": "SC-005",
+      "pack_id": "journey3.incorporate-hire.india-central",
+      "claim_ids": ["c.esi-rules-current", "c.esi-insurance", "c.esi-ceiling", "c.esi-rate", "c.esi-remit"],
+      "source_ids": ["s.ss-rules", "s.esi-continuation-2026", "s.esi-reg31"],
+      "official_url": "https://www.labour.gov.in/static/uploads/2026/05/49aa9b62c2125499c37399b90e969d67.pdf",
+      "locator": "G.S.R. 344(E), pp.134-135 and rules 18-19 pp.159-160; S.O. 2351(E) p.2",
+      "result": "PASS_WITH_GATE",
+      "note": "Rules supersession, employee registration and contribution percentages are current. No current numeric Chapter-IV ceiling or confirmed post-Code remittance rule was found; both remain Candidate."
+    },
+    {
+      "id": "SC-006",
+      "pack_id": "gon.central-procurement.first-bid.v1",
+      "claim_ids": ["cl.gem-mandatory", "cl.bid-security", "cl.startup-relaxation", "cl.cppp-summary-proof", "cl.cppp-receipt-boundary"],
+      "source_ids": ["src.gfr2026", "src.goods2024", "src.cppp-help"],
+      "official_url": "https://doe.gov.in/files/whats_new_documents/GFRupdatedupto31012026.pdf",
+      "locator": "GFR Rules 149, 170 and 173, pp.33-44; CPPP Special Instructions items 19-20",
+      "result": "PASS_WITH_GATE",
+      "note": "Channel/security/relaxation and receipt-boundary claims are supported; unavailable GeM/demo transaction facts stay gated."
+    },
+    {
+      "id": "SC-007",
+      "pack_id": "journey.05.deceased-assets",
+      "claim_ids": ["c.epf-complete-20d", "c.epf-deficiency-20d", "c.epf-delay-interest", "c.eps-complete-20d", "c.eps-deficiency-20d", "c.eps-delay-interest", "c.edli-complete-20d", "c.edli-deficiency-20d", "c.edli-delay-interest"],
+      "source_ids": ["s.epf-scheme-2026", "s.epf-corrigendum-2026", "s.eps-scheme-2026", "s.eps-corrigendum-2026", "s.edli-scheme-2026", "s.edli-corrigendum-2026"],
+      "official_url": "https://egazette.gov.in/WriteReadData/2026/273957.pdf",
+      "locator": "EPF paragraph 54(7)-(9) p.94; EPS paragraph 17(1)-(3) pp.55-56; EDLI paragraph 23(3)-(5) p.18; corrigenda 703(E)-705(E) checked in full",
+      "result": "PASS",
+      "note": "All nine propositions and conditional remedy wording independently confirmed; corrigenda do not alter them."
+    },
+    {
+      "id": "SC-008",
+      "pack_id": "journey.05.deceased-assets",
+      "claim_ids": ["c.nps-gov-current-threshold", "c.nps-gov-faq-threshold", "c.postal-high-value-rule", "c.postal-high-value-sbi"],
+      "source_ids": ["s.pfrda-regs-2026", "s.pfrda-faq-gov", "s.dea-gspr", "s.sbi-scss-faq"],
+      "official_url": "https://www.pfrda.org.in",
+      "locator": "Consolidated NPS regulation amended 20 July 2026 versus current government-sector FAQ; General Savings Promotion Rules rule 15 versus SBI SCSS FAQ",
+      "result": "PASS_WITH_CONFLICT",
+      "note": "Both authoritative conflicts are real, recorded and blocked from automatic entitlement/checklist generation."
+    },
+    {
+      "id": "SC-009",
+      "pack_id": "india.cyber-financial-fraud.v1",
+      "claim_ids": ["cf.c10", "cf.c11", "cf.c36", "cf.c38", "cf.c39", "cf.c53", "cf.c59"],
+      "source_ids": ["cf.s02", "cf.s04", "cf.s06", "cf.s09", "cf.s11", "cf.s14", "cf.s23", "cf.s25", "cf.s26"],
+      "official_url": "https://old.rbi.org.in/commonman/english/scripts/faqs.aspx?id=3407",
+      "locator": "RB-IOS 2026 FAQ Q9-Q21; RBI 2017 liability paragraphs 5-12; RBI 2019 TAT Annex; NCRP/MHA current pages",
+      "result": "PASS_WITH_GATES",
+      "note": "No stale Delhi-only 24-hour rule, recovery guarantee or victim-authorised zero-liability conclusion enters the happy path; the credentialed restoration portal is Unavailable."
+    },
+    {
+      "id": "SC-010",
+      "pack_id": "in.central.reusable-foundations.v1",
+      "claim_ids": ["cl.epfo.coverage", "cl.epfo.route", "cl.epfo.portal-transition"],
+      "source_ids": ["src.mole.social-security-code", "src.mole.ss-rules-2026", "src.epfo.employers", "src.shram.portal", "src.shram.manual"],
+      "official_url": "https://labour.gov.in/sites/default/files/ss_code_gazette.pdf",
+      "locator": "First Schedule Part I; G.S.R. 344(E) rule 5 pp.138-139",
+      "result": "PASS_WITH_GATE",
+      "note": "Substantive 20+ coverage is current; stale portal labels cannot narrow it; live common Form-I submission remains Candidate."
+    },
+    {
+      "id": "SC-011",
+      "pack_id": "in.central.reusable-foundations.v1",
+      "claim_ids": ["cl.gst.signature-old", "cl.gst.signature-evc", "cl.gst.signature-current-buttons"],
+      "source_ids": ["src.gst.welcome", "src.gst.evc", "src.gst.clarification"],
+      "official_url": "https://tutorial.gst.gov.in/userguide/registration/Application_for_Filing_Clarification.htm",
+      "locator": "Verification controls; the 2021 compilation URL returned 404 on 2026-08-28",
+      "result": "PASS_WITH_CONFLICT",
+      "note": "The dead source is no longer admitted as current evidence and the live transaction decides eligible signing mode."
+    },
+    {
+      "id": "SC-DECL-01",
+      "pack_id": "journey.import-regulated-product.india",
+      "claim_ids": ["clm.pqms-phased", "clm.wpc-route-conflict", "clm.classification-demo", "clm.state-local"],
+      "source_ids": ["src.swift-pqms-2026", "src.dot-eta", "src.dot-portal-transition", "src.dgft-itchs"],
+      "official_url": "https://eservices.dot.gov.in/saral/wpc-eta-self-declaration",
+      "locator": "DoT portal transition notice effective 25 June 2026; PQMS advisory 4.7 dated 15 April 2026",
+      "result": "PASS_WITH_GATES",
+      "note": "Every declared non-Verified claim and both conflicts were inspected; route/classification uncertainty blocks dispatch/sale."
+    },
+    {
+      "id": "SC-DECL-02",
+      "pack_id": "india.export.first-goods-order",
+      "claim_ids": ["claim.classification-case", "claim.gst-refund-case", "claim.foreign-case", "claim.bank-charges-case"],
+      "source_ids": ["src.ftp-chapter2-current", "src.itc-notification60", "src.igst-section16", "src.gst-refund-guide"],
+      "official_url": "https://content.dgft.gov.in/Website/dgftprod/9158887c-cdfb-4312-92f1-15eeb8e8aa70/%5BUPDATED%5D%20CHAPTER%202%20OF%20FTP.pdf",
+      "locator": "FTP paragraphs 2.05-2.06 and 2.54-2.57; IGST section 16 framework",
+      "result": "PASS_WITH_GATES",
+      "note": "All four Candidate claims are case facts or unsupported amounts/foreign rules and do not drive the happy path."
+    },
+    {
+      "id": "SC-DECL-03",
+      "pack_id": "journey3.incorporate-hire.india-central",
+      "claim_ids": ["c.bank-post-kyc", "c.mca-fees-unknown", "c.state-local-branch", "c.agile-state-conflict", "c.saved-schemes", "c.esi-ceiling", "c.esi-disability-conflict", "c.esi-remit", "c.gst-service-threshold"],
+      "source_ids": ["s.agile-kit", "s.spice-faq", "s.epf-scheme", "s.epf-scheme-1952", "s.ss-rules", "s.esi-rules", "s.esi-continuation-2026", "s.esi-reg31"],
+      "official_url": "https://www.labour.gov.in/static/uploads/2026/05/49aa9b62c2125499c37399b90e969d67.pdf",
+      "locator": "Current 2026 instruments and explicitly superseded legacy sources",
+      "result": "PASS_WITH_GATES",
+      "note": "All Conflict/Stale/Candidate claims are correctly excluded from automatic execution."
+    },
+    {
+      "id": "SC-DECL-04",
+      "pack_id": "gon.central-procurement.first-bid.v1",
+      "claim_ids": ["cl.gem-current-steps-unavailable", "cl.suggested-review", "cl.cppp-core-manuals-stale", "cl.demo-tender-unavailable", "cl.demo-oem-form-unavailable", "cl.demo-security-unavailable"],
+      "source_ids": ["src.gem-lms", "src.gem-login", "src.cppp-bidderkit", "src.demo-iitdh"],
+      "official_url": "https://ui.gem.gov.in/login",
+      "locator": "HTTP 403/login block on 2026-08-28; detailed CPPP manuals dated 2018",
+      "result": "PASS_WITH_GATES",
+      "note": "Every declared Stale/Unavailable item blocks the demo transaction; the five-day/30-day suggested review period remains Candidate."
+    },
+    {
+      "id": "SC-DECL-05",
+      "pack_id": "journey.05.deceased-assets",
+      "claim_ids": ["c.no-universal-registry", "c.no-universal-securities-search", "c.nps-gov-current-threshold", "c.nps-gov-faq-threshold", "c.no-universal-iepf-search", "c.postal-high-value-rule", "c.postal-high-value-sbi"],
+      "source_ids": ["s.rbi-udgam-faq", "s.sebi-mitra", "s.pfrda-regs-2026", "s.pfrda-faq-gov", "s.iepf5-kit", "s.dea-gspr", "s.sbi-scss-faq"],
+      "official_url": "https://www.rbi.org.in",
+      "locator": "Asset-class discovery routes and the two recorded official conflicts",
+      "result": "PASS_WITH_GATES",
+      "note": "All declared Conflict/Stale/Unavailable claims were inspected and remain bounded."
+    },
+    {
+      "id": "SC-DECL-06",
+      "pack_id": "india.cyber-financial-fraud.v1",
+      "claim_ids": ["cf.c10", "cf.c11", "cf.c36", "cf.c38", "cf.c39", "cf.c48", "cf.c53"],
+      "source_ids": ["cf.s01", "cf.s02", "cf.s04", "cf.s06", "cf.s08", "cf.s09", "cf.s11", "cf.s21", "cf.s22", "cf.s23", "cf.s25"],
+      "official_url": "https://cybercrime.gov.in/Webform/FAQ.aspx",
+      "locator": "NCRP FAQ, RBI circulars, NPCI FAQ, legacy Delhi-only instruction and login-gated CFCFRMS portal",
+      "result": "PASS_WITH_GATES",
+      "note": "Every declared Conflict/Stale/Unavailable claim/source was inspected; none is represented as a universal entitlement or deadline."
+    },
+    {
+      "id": "SC-DECL-07",
+      "pack_id": "in.central.reusable-foundations.v1",
+      "claim_ids": ["cl.gst.signature-old", "cl.gst.signature-evc", "cl.icegate.dsc", "cl.gem.identity", "cl.epfo.portal-transition"],
+      "source_ids": ["src.gst.welcome", "src.gst.evc", "src.icegate.registration-services", "src.icegate.dsc", "src.gem.gtc", "src.gem.manual", "src.gem.login", "src.epfo.employers", "src.shram.portal", "src.shram.manual"],
+      "official_url": "https://tutorial.gst.gov.in/downloads/news/new_functionalities_compilation_october_december_2021.pdf",
+      "locator": "404 on 2026-08-28; other sources are explicitly stale, partial or login-gated as recorded",
+      "result": "PASS_WITH_GATES",
+      "note": "All non-Verified claims and inaccessible sources create consumer-specific Action Required gates."
+    }
+  ],
+  "unresolved_gaps": [
+    {
+      "pack_id": "journey.import-regulated-product.india",
+      "gap_ids": ["gap.01", "gap.02", "gap.03", "gap.04", "gap.05", "gap.06", "gap.07", "gap.08", "gap.09", "gap.10", "gap.11", "gap.12", "gap.13", "gap.14"],
+      "status_counts": {"Candidate": 9, "Conflict": 1, "Unavailable": 4},
+      "gate_assessment": "All affect classification, current portal route, amount or shipment-specific approval and block dispatch/sale or post-entry closeout as applicable."
+    },
+    {
+      "pack_id": "india.export.first-goods-order",
+      "gap_ids": ["gap.exact-classification", "gap.foreign-requirements", "gap.state-local", "gap.private-charges", "gap.payment-instrument", "gap.gst-refund", "gap.special-goods", "gap.origin-certificate"],
+      "status_counts": {"Candidate": 8},
+      "gate_assessment": "Case classification, foreign/state rules, refund eligibility and private charges are withheld from the generic happy path."
+    },
+    {
+      "pack_id": "journey3.incorporate-hire.india-central",
+      "gap_ids": ["g.mca-money", "g.bank", "g.state-local", "g.social-transition", "g.esi-disability", "g.gst-case"],
+      "status_counts": {"Candidate": 5, "Stale": 1},
+      "gate_assessment": "The current numeric Chapter-IV ceiling, live MCA/bank facts, state/local rules and GST case classification remain Action Required."
+    },
+    {
+      "pack_id": "gon.central-procurement.first-bid.v1",
+      "gap_ids": ["gap.gem-live-transaction", "gap.gem-terms-incident", "gap.cppp-detailed-ui", "gap.demo-pack", "gap.demo-oem", "gap.demo-security", "gap.demo-eligibility", "gap.demo-future-status"],
+      "status_counts": {"Stale": 1, "Unavailable": 7},
+      "gate_assessment": "The pack cannot demonstrate the unavailable tender/GeM route; it stops before any claim of valid submission, responsiveness or award."
+    },
+    {
+      "pack_id": "journey.05.deceased-assets",
+      "gap_ids": ["g.cross-asset-registry", "g.udgam-coverage", "g.bank-no-nomination", "g.securities-discovery", "g.insurance-discovery", "g.insurance-product-docs", "g.epfo-record-discovery", "g.epfo-form-freshness", "g.iepf-discovery", "g.postal-institution-docs", "g.state-court-process"],
+      "status_counts": {"Candidate": 3, "Stale": 2, "Unavailable": 6},
+      "gate_assessment": "Discovery is asset-class-specific and all institution, claimant, entitlement and disputed-successor facts require confirmation."
+    },
+    {
+      "pack_id": "india.cyber-financial-fraud.v1",
+      "gap_ids": ["cf.gap01", "cf.gap02", "cf.gap03", "cf.gap04", "cf.gap05", "cf.gap06", "cf.gap07"],
+      "status_counts": {"Candidate": 4, "Conflict": 1, "Unavailable": 2},
+      "gate_assessment": "Urgent reporting proceeds, but complaint timing, recovery, liability, telecom and restoration outcomes remain explicitly unpromised."
+    },
+    {
+      "pack_id": "in.central.reusable-foundations.v1",
+      "gap_ids": ["gap.gst.signature", "gap.icegate.role-fields", "gap.dsc.consumer-profile", "gap.gem.current-signature", "gap.epfo.coverage-special", "gap.epfo.current-registration-manual", "gap.processing-times", "gap.bank-onboarding"],
+      "status_counts": {"Candidate": 3, "Conflict": 1, "Stale": 1, "Unavailable": 3},
+      "gate_assessment": "Consumer-specific signature/profile/portal contracts and lagging EPFO operational material remain gated; reusable proofs do not imply downstream eligibility."
+    }
+  ],
+  "post_checkpoint_delta": {
+    "revision_base": "outputs/checkpoints/2026-08-28T0201-IST-v1",
+    "current_pack_glob": "outputs/packs/*.json",
+    "current_validation_report": "outputs/validation-report.json",
+    "scope_rule": "Only added or materially changed claims/tasks/sources/edges, affected reusable cross-pack claims, and a small deterministic sample of other new Verified claims were reviewed; unchanged checkpoint evidence was not reopened.",
+    "portfolio_delta": {
+      "tasks": {"baseline": 147, "current": 162, "delta": 15},
+      "dependency_edges": {"baseline": 206, "current": 236, "delta": 30},
+      "claims": {"baseline": 347, "current": 447, "delta": 100},
+      "sources": {"baseline": 218, "current": 273, "delta": 55},
+      "coverage_gaps": {"baseline": 64, "current": 62, "delta": -2},
+      "claim_statuses": {"Verified": 404, "Candidate": 18, "Conflict": 4, "Stale": 10, "Unavailable": 11}
+    },
+    "pack_deltas": [
+      {"pack_id": "journey.import-regulated-product.india", "tasks_added": 5, "edges_added": 13, "claims_added": 11, "claims_materially_changed": 1, "sources_added": 13},
+      {"pack_id": "india.export.first-goods-order", "tasks_added": 6, "edges_added": 9, "claims_added": 14, "claims_materially_changed": 5, "sources_net_delta": 11},
+      {"pack_id": "journey3.incorporate-hire.india-central", "tasks_added": 0, "edges_added": 0, "claims_added": 9, "claims_materially_changed": 6, "sources_net_delta": 7},
+      {"pack_id": "gon.central-procurement.first-bid.v1", "tasks_added": 3, "edges_added": 6, "claims_added": 11, "claims_materially_changed": 0, "sources_added": 2},
+      {"pack_id": "journey.05.deceased-assets", "tasks_added": 0, "edges_added": 0, "claims_added": 25, "claims_materially_changed": 5, "sources_added": 12},
+      {"pack_id": "india.cyber-financial-fraud.v1", "tasks_added": 1, "edges_added": 2, "claims_added": 17, "claims_materially_changed": 2, "sources_added": 5},
+      {"pack_id": "in.central.reusable-foundations.v1", "tasks_added": 0, "edges_added": 0, "claims_added": 13, "claims_materially_changed": 7, "sources_added": 5}
+    ],
+    "delta_claim_checks": [
+      {
+        "pack_id": "journey.import-regulated-product.india",
+        "claim_ids": ["clm.bis-negative-status", "clm.caar-route", "clm.ewaste-registration-route", "clm.gst-invoice", "clm.gst-registration-timing", "clm.icegate-negative-remediation", "clm.lm-route-proof", "clm.plastic-epr-registration", "clm.repa-fees", "clm.repa-route-exceptions", "clm.repa-validity", "clm.lm-packages"],
+        "result": "PASS",
+        "note": "Scheme-II suspension/cancellation, CAAR, GST invoice/registration, Customs rejection cure, Legal Metrology proof, e-waste/plastic EPR, and REPA scope/fees/validity are atomic and linked to blocking proof."
+      },
+      {
+        "pack_id": "india.export.first-goods-order",
+        "claim_ids": ["claim.ebrc-cancellation", "claim.ebrc-utilisation", "claim.gst-lut-breach", "claim.gst-refund-bank-validation", "claim.gst-refund-remediation", "claim.icegate-dgft-retransmission", "claim.icegate-edpms-rectification", "claim.rbi-document-routing", "claim.rbi-small-edpms", "claim.rbi-third-party", "claim.scomet-case", "claim.scomet-list", "claim.scomet-portal", "claim.shipping-bill-status", "claim.classification-case", "claim.ebrc-review", "claim.policy-schedule", "claim.rbi-edpms", "claim.shipping-bill-messages"],
+        "result": "PASS",
+        "note": "LUT breach and refund cure clocks, RBI routing, SCOMET classification/authorisation and ICEGATE/eBRC rejection paths are supported; shipment classification remains Candidate."
+      },
+      {
+        "pack_id": "journey3.incorporate-hire.india-central",
+        "claim_ids": ["c.epf-portal-current", "c.esi-portal-current", "c.gst-classification-gate", "c.inc20a-processing", "c.mca-money-components", "c.mca-name-cure", "c.mca-support", "c.tds-correction", "c.tds-default", "c.agile-identifiers", "c.esi-remit", "c.gst-service-threshold", "c.mca-fees-unknown", "c.mca-resubmission", "c.saved-schemes"],
+        "result": "PASS_AFTER_REVISION",
+        "note": "Current ESI Regulation 31 savings, GST classification, MCA cure/money boundaries and 2026 Income-tax correction/default rules pass. IER-010 was resolved with the live, narrowly used EPFO Revamped ECR page."
+      },
+      {
+        "pack_id": "gon.central-procurement.first-bid.v1",
+        "claim_ids": ["cl.bid-security-exemption-evidence", "cl.bid-security-forms-bsd", "cl.cppp-cancelled-search", "cl.cppp-dsc-remap-boundary", "cl.eproc-bidder-dsc-role", "cl.gem-2024-category-architecture-stale", "cl.gem-2024-incident-architecture-stale", "cl.prebid-clarification", "cl.preclose-resubmit-withdraw", "cl.tender-download-route", "cl.tender-grievance-clause"],
+        "result": "PASS",
+        "note": "Manual-for-Goods security forms/exemptions, 7/5-day clarification rules, pre-close substitution/withdrawal and tender grievance boundaries are exact; 2024 GeM architecture remains Stale."
+      },
+      {
+        "pack_id": "journey.05.deceased-assets",
+        "claim_ids": ["c.cpgrams-21d", "c.cpgrams-appeal-30d", "c.iepf-authority-60-days", "c.iepf-deficiency-rejection", "c.iepf-transmission-first", "c.insurance-assignment", "c.insurance-beneficial-nominee", "c.insurance-death-tat", "c.insurance-delay-interest", "c.insurance-document-rejection", "c.insurance-grievance-14d", "c.nps-grievance-30d", "c.nps-lite-ack-rejection", "c.nps-lite-deficiency", "c.nps-lite-settlement", "c.nps-ombudsman-45d", "c.nps-trust-21d", "c.postal-grievance-tat", "c.postal-legal-evidence-route", "c.postal-settlement-7d", "c.rbi-ombudsman-90d", "c.rbi-ombudsman-appeal-30d", "c.scores-entity-21d", "c.scores-one-year", "c.scores-review-15d", "c.nps-gov-current-threshold", "c.nps-gov-faq-threshold", "c.postal-high-value-rule", "c.postal-high-value-sbi", "c.postal-low-value"],
+        "result": "PASS_AFTER_REVISION",
+        "note": "Claim/rejection/grievance clocks and current NPS/postal bands pass. IER-011 was resolved after the republished live IRDAI section-39 source was independently extracted."
+      },
+      {
+        "pack_id": "india.cyber-financial-fraud.v1",
+        "claim_ids": ["cf.c63", "cf.c64", "cf.c65", "cf.c66", "cf.c68", "cf.c69", "cf.c70", "cf.c71", "cf.c72", "cf.c73", "cf.c74", "cf.c75", "cf.c76", "cf.c77", "cf.c78", "cf.c79", "cf.c80", "cf.c11", "cf.c38"],
+        "result": "PASS",
+        "note": "1930/CFCFRMS language remains possibility-based, RBI Internal Ombudsman 20/30-day rules and routing are exact, and CERT-In remediation does not promise recovery."
+      },
+      {
+        "pack_id": "in.central.reusable-foundations.v1",
+        "claim_ids": ["cl.dsc.validity-archive", "cl.epfo.scheme-current", "cl.gst.dsc-pan-match", "cl.gst.registration-escalation", "cl.iec.bank-validation", "cl.iec.route-proof", "cl.iec.tracking-deficiency", "cl.pan.fee", "cl.pan.route", "cl.pan.track", "cl.tan.escalation", "cl.tan.fee", "cl.tan.track", "cl.epfo.portal-transition", "cl.epfo.saved-schemes", "cl.icegate.dsc", "cl.icegate.mapping", "cl.iec.prereq-route", "cl.pan.forms-route", "cl.tan.route-fee-track"],
+        "result": "PASS",
+        "note": "DSC archive validity, current EPF scheme, GST DSC/escalation, IEC bank/deficiency and PAN/TAN route/fee/tracking additions are bounded to live transaction proof."
+      }
+    ],
+    "deterministic_other_verified_sample": {
+      "selection_rule": "Lexicographically sorted new Verified claims outside the high-risk keyword set, selected with seed 202608280201 plus pack ordinal; where a pack had no such claim, no artificial sample was added.",
+      "claim_ids": ["c.mca-support", "cl.cppp-cancelled-search", "cf.c63", "cf.c64", "cf.c66", "cf.c80", "cl.dsc.validity-archive"],
+      "result": "PASS"
+    },
+    "delta_source_checks": [
+      {"id": "SC-D01", "packs": ["journey.import-regulated-product.india"], "source_ids": ["src.dot-repa-rules", "src.dot-repa-service"], "official_url": "https://eservices.dot.gov.in/sites/default/files/media-docs/telecommunications-radio-equipment-possession-authorisation-rules-2026-2.pdf", "locator": "G.S.R. 592(E), rules 4-6 and 10, English PDF pp.8-12", "result": "PASS"},
+      {"id": "SC-D02", "packs": ["journey.import-regulated-product.india"], "source_ids": ["src.caar-regulations", "src.caar-form", "src.cgst-s25", "src.cgst-s31", "src.cgst-rule46", "src.ewaste-faq", "src.plastic-epr-guidelines", "src.icegate-efiling-messages"], "official_url": "https://www.cbic.gov.in/content/anotherfile/media/CONTENTREPO/CAAR/amended-vide-notification-22112022.pdf", "locator": "CAAR regulation 6; CGST sections 25/31 and rule 46; CPCB Schedule-I/packaging registration; ICEGATE message catalogue", "result": "PASS"},
+      {"id": "SC-D03", "packs": ["india.export.first-goods-order"], "source_ids": ["src.cgst-rule96a", "src.gst-circular125", "src.gst-refund-rules", "src.gst-refund-tracking-advisory"], "official_url": "https://cbic-gst.gov.in/pdf/01062021-CGST-Rules-2017-Part-A-Rules.pdf", "locator": "Rule 96A(1)-(3); RFD-03/RFD-08/RFD-09 cure flow; PFMS bank validation/update", "result": "PASS"},
+      {"id": "SC-D04", "packs": ["india.export.first-goods-order"], "source_ids": ["src.itc-notification50", "src.scomet-notification31", "src.scomet-manual-v4", "src.icegate-dgft-retransmission", "src.icegate-edpms-advisory", "src.rbi-export-direction"], "official_url": "https://content.dgft.gov.in/Website/dgftprod/66297819-5587-417b-a780-d8fa2ba326fe/Notification%2031%202025-2026%20updation%20in%20scomet%20list.pdf", "locator": "Notification 31 paragraphs 1-3/effect; SCOMET ANF 2O(A)/(B); ICEGATE retransmission/EDPMS steps; RBI A/B/C paragraphs cited per claim", "result": "PASS"},
+      {"id": "SC-D05", "packs": ["journey3.incorporate-hire.india-central", "in.central.reusable-foundations.v1"], "source_ids": ["s.social-security-code", "s.ss-rules", "s.epf-scheme", "s.esi-reg31", "s.esic-code-notice", "s.epfo-ecr-revamp", "src.mole.epf-scheme-2026"], "official_url": "https://www.epfo.gov.in/revamped-ecr/", "locator": "EPFO page body/key-features list; G.S.R. 344(E) supersession pp.134-135 and rules 18-19 pp.159-160; Code section 164; G.S.R. 525(E)", "result": "PASS_AFTER_IER_010_REVISION"},
+      {"id": "SC-D06", "packs": ["gon.central-procurement.first-bid.v1"], "source_ids": ["src.goods2024", "src.cppp-help", "src.cppp-cancelled"], "official_url": "https://doe.gov.in/files/circulars_document/Manual_Goods_2024.pdf", "locator": "Sections 5.2.4-5.2.5 pp.150-151; 6.1.1 pp.158-159; Appendix 3 section 3(c) pp.381-382", "result": "PASS"},
+      {"id": "SC-D07", "packs": ["journey.05.deceased-assets"], "source_ids": ["s.irdai-policyholder-master-2024", "s.insurance-act-1938", "s.pfrda-amendment-2025", "s.nps-trust-death-2026", "s.protean-nps-lite-sop-2025"], "official_url": "https://noc.irdai.gov.in/Content/docs/Insurance%20Act%2C1938%20-%20incorporating%20all%20amendments%20till%2020212021-08-12.pdf", "locator": "Insurance Act section 39(6)-(12), printed pp.54-55; IRDAI Master Circular pp.107-108, 152-153; NPS amendment government-death bands; NPS Lite p.22", "result": "PASS_AFTER_IER_011_REVISION"},
+      {"id": "SC-D08", "packs": ["india.cyber-financial-fraud.v1"], "source_ids": ["cf.s27", "cf.s28", "cf.s30", "cf.s31"], "official_url": "https://www.rbi.org.in/Scripts/BS_ViewMasDirections.aspx?id=12586", "locator": "Clauses 11 and 13(1)-(15); PIB 17 June 2026; CERT-In CICA-2026-3492 recommendations", "result": "PASS"},
+      {"id": "SC-D09", "packs": ["in.central.reusable-foundations.v1"], "source_ids": ["src.cca.faq", "src.cca.ca-status", "src.gst.known-issues", "src.dgft.iec-manual", "src.itd.pan-2026", "src.protean.tan"], "official_url": "https://tutorial.gst.gov.in/offlineutilities/gsterrorandresolution/gstissuesandsuggestedsolutions.pdf", "locator": "GST registration issues pp.9-10, 19, 22-23; DGFT IEC Manual V4.1; current Income Tax/Protean route and fee records", "result": "PASS"}
+    ],
+    "cross_pack_rechecks": [
+      {"topic": "EPF scheme and employer-portal handoff", "packs": ["journey3.incorporate-hire.india-central", "in.central.reusable-foundations.v1"], "result": "CONSISTENT_AFTER_IER_010_REVISION"},
+      {"topic": "GST registration/signature/classification", "packs": ["journey.import-regulated-product.india", "journey3.incorporate-hire.india-central", "in.central.reusable-foundations.v1"], "result": "CONSISTENT"},
+      {"topic": "IEC/ICEGATE filing, rejection and mapping", "packs": ["journey.import-regulated-product.india", "india.export.first-goods-order", "in.central.reusable-foundations.v1"], "result": "CONSISTENT"},
+      {"topic": "Udyam/MSE/startup bid-security treatment", "packs": ["gon.central-procurement.first-bid.v1", "in.central.reusable-foundations.v1"], "result": "CONSISTENT_AND_TENDER_GATED"},
+      {"topic": "RBI grievance escalation", "packs": ["journey.05.deceased-assets", "india.cyber-financial-fraud.v1"], "result": "CONSISTENT"}
+    ]
+  },
+  "review_summary": {
+    "overall_verdict": "CONDITIONAL_PASS",
+    "reason": "No open P0, P1, P2 or P3 finding remains after direct reinspection of the two rolling-v2 source repairs. Sixty-two explicit evidence gaps remain and require fail-closed handling, so PASS is not available under the contract.",
+    "finding_counts": {
+      "total": 11,
+      "open": 0,
+      "resolved_by_existing_gate": 11,
+      "P0": 0,
+      "P1": 4,
+      "P2": 3,
+      "P3": 4
+    },
+    "pack_counts": {
+      "packs": 7,
+      "tasks": 162,
+      "dependency_edges": 236,
+      "claims": 447,
+      "sources": 273,
+      "declared_conflicts": 10,
+      "coverage_gaps": 62,
+      "claim_statuses": {"Verified": 404, "Candidate": 18, "Conflict": 4, "Stale": 10, "Unavailable": 11}
+    },
+    "sampling": {
+      "checkpoint_additional_verified_claims": 35,
+      "post_checkpoint_other_new_verified_claims": 7,
+      "total_additional_verified_claims": 42,
+      "result": "All checkpoint and rolling-v2 samples were supported by competent primary official sources with adequate locators."
+    },
+    "machine_integrity": {
+      "validator": "python3 work/validate_packs.py outputs/packs/01-import-regulated-product.json outputs/packs/02-export-first-order.json outputs/packs/03-incorporate-and-hire.json outputs/packs/04-central-procurement-first-bid.json outputs/packs/05-deceased-assets.json outputs/packs/06-cyber-financial-fraud.json outputs/packs/07-reusable-foundations.json",
+      "valid": true,
+      "errors": 0,
+      "warnings": 0,
+      "non_verified_happy_path_tasks": 0
+    },
+    "release_rule": "Keep overall and per-pack readiness Action Required until each recorded gap is resolved with current evidence and the user's private case facts."
+  }
+}

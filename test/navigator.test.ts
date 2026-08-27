@@ -13,6 +13,9 @@ import {
   type Roadmap,
 } from "../src/index.js";
 import { createAdmittedPack } from "./fixtures.js";
+import { importRegulatedProductPack } from "../src/packs/import-regulated-product.js";
+
+const legacyImportFixtureRegistry = createRegistry([importRegulatedProductPack]);
 
 const completeImportFacts = {
   commercialPurpose: true,
@@ -71,7 +74,7 @@ describe("adaptive fail-closed graphs", () => {
     const regulated = buildRoadmap({
       entry: { kind: "browse", outcomeId: "import-regulated-product" },
       answers: completeImportFacts,
-    });
+    }, { registry: legacyImportFixtureRegistry });
     const simpler = buildRoadmap({
       entry: { kind: "browse", outcomeId: "import-regulated-product" },
       answers: {
@@ -83,7 +86,7 @@ describe("adaptive fail-closed graphs", () => {
         plasticPackaging: false,
         brandedByImporter: false,
       },
-    });
+    }, { registry: legacyImportFixtureRegistry });
 
     const regulatedIds = regulated.tasks.map((task) => task.id);
     const simplerIds = simpler.tasks.map((task) => task.id);
@@ -119,7 +122,7 @@ describe("adaptive fail-closed graphs", () => {
     const roadmap = buildRoadmap({
       entry: { kind: "browse", outcomeId: "import-regulated-product" },
       answers: { commercialPurpose: true, shipmentStage: "planning" },
-    });
+    }, { registry: legacyImportFixtureRegistry });
 
     expect(roadmap.status).toBe("needs-information");
     expect(roadmap.questions.map((question) => question.factKey)).toEqual(
@@ -144,7 +147,7 @@ describe("adaptive fail-closed graphs", () => {
     const roadmap = buildRoadmap({
       entry: { kind: "browse", outcomeId: "import-regulated-product" },
       answers: completeImportFacts,
-    });
+    }, { registry: legacyImportFixtureRegistry });
 
     expect(roadmap.tasks.length).toBeGreaterThan(0);
     expect(roadmap.tasks.every((task) => task.actionability === "withheld")).toBe(

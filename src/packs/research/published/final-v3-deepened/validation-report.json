@@ -1,0 +1,153 @@
+{
+  "schema": "work/government-outcome-pack.schema.json",
+  "valid": true,
+  "packs": [
+    {
+      "file": "outputs/packs/01-import-regulated-product.json",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "counts": {
+        "tasks": 28,
+        "edges": 55,
+        "claims": 51,
+        "sources": 53,
+        "conflicts": 2,
+        "coverage_gaps": 14,
+        "claim_statuses": {
+          "Verified": 47,
+          "Candidate": 3,
+          "Conflict": 1,
+          "Stale": 0,
+          "Unavailable": 0
+        }
+      }
+    },
+    {
+      "file": "outputs/packs/02-export-first-order.json",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "counts": {
+        "tasks": 27,
+        "edges": 41,
+        "claims": 54,
+        "sources": 28,
+        "conflicts": 0,
+        "coverage_gaps": 8,
+        "claim_statuses": {
+          "Verified": 49,
+          "Candidate": 5,
+          "Conflict": 0,
+          "Stale": 0,
+          "Unavailable": 0
+        }
+      }
+    },
+    {
+      "file": "outputs/packs/03-incorporate-and-hire.json",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "counts": {
+        "tasks": 23,
+        "edges": 35,
+        "claims": 63,
+        "sources": 45,
+        "conflicts": 1,
+        "coverage_gaps": 6,
+        "claim_statuses": {
+          "Verified": 55,
+          "Candidate": 5,
+          "Conflict": 1,
+          "Stale": 2,
+          "Unavailable": 0
+        }
+      }
+    },
+    {
+      "file": "outputs/packs/04-central-procurement-first-bid.json",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "counts": {
+        "tasks": 21,
+        "edges": 35,
+        "claims": 51,
+        "sources": 17,
+        "conflicts": 0,
+        "coverage_gaps": 8,
+        "claim_statuses": {
+          "Verified": 43,
+          "Candidate": 1,
+          "Conflict": 0,
+          "Stale": 3,
+          "Unavailable": 4
+        }
+      }
+    },
+    {
+      "file": "outputs/packs/05-deceased-assets.json",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "counts": {
+        "tasks": 27,
+        "edges": 30,
+        "claims": 81,
+        "sources": 45,
+        "conflicts": 2,
+        "coverage_gaps": 11,
+        "claim_statuses": {
+          "Verified": 77,
+          "Candidate": 0,
+          "Conflict": 0,
+          "Stale": 1,
+          "Unavailable": 3
+        }
+      }
+    },
+    {
+      "file": "outputs/packs/06-cyber-financial-fraud.json",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "counts": {
+        "tasks": 21,
+        "edges": 22,
+        "claims": 79,
+        "sources": 30,
+        "conflicts": 4,
+        "coverage_gaps": 7,
+        "claim_statuses": {
+          "Verified": 71,
+          "Candidate": 2,
+          "Conflict": 1,
+          "Stale": 1,
+          "Unavailable": 4
+        }
+      }
+    },
+    {
+      "file": "outputs/packs/07-reusable-foundations.json",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "counts": {
+        "tasks": 15,
+        "edges": 18,
+        "claims": 68,
+        "sources": 55,
+        "conflicts": 1,
+        "coverage_gaps": 8,
+        "claim_statuses": {
+          "Verified": 62,
+          "Candidate": 2,
+          "Conflict": 1,
+          "Stale": 3,
+          "Unavailable": 0
+        }
+      }
+    }
+  ]
+}

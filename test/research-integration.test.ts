@@ -12,8 +12,12 @@ import {
 } from "../src/index.js";
 
 const admittedOutcomeIds = [
+  "import-regulated-product",
+  "export-first-commercial-order",
+  "incorporate-company-first-hire",
   "central-procurement-first-bid",
   "post-death-regulated-assets",
+  "urgent-cyber-financial-fraud",
   "reusable-central-foundations",
 ] as const;
 
@@ -29,12 +33,24 @@ function affirmativeAnswers(
 }
 
 describe("published research admission", () => {
-  it("loads the three explicitly approved rolling packs through KnowledgePackV1", () => {
+  it("loads all seven independently reviewed final packs through KnowledgePackV1", () => {
     expect(researchAdmissionManifest).toMatchObject({
-      publication_state: "rolling",
+      publication_state: "final",
       portfolio_status: "STRUCTURALLY_VALID",
-      independent_review: { status: "pending" },
+      independent_review: {
+        status: "complete",
+        overall_verdict: "CONDITIONAL_PASS",
+      },
+      totals: {
+        packs: 7,
+        tasks: 162,
+        dependency_edges: 236,
+        claims: 447,
+        sources: 273,
+        coverage_gaps: 62,
+      },
     });
+    expect(researchIntegrationReports).toHaveLength(7);
     for (const outcomeId of admittedOutcomeIds) {
       const outcome = builtInRegistry.getOutcome(outcomeId);
       const pack = builtInRegistry.getPackForOutcome(outcomeId);
@@ -44,6 +60,13 @@ describe("published research admission", () => {
       expect(pack?.tasks.length).toBeGreaterThan(0);
       expect(pack?.claims.length).toBeGreaterThan(0);
     }
+  });
+
+  it("supersedes the unreviewed import fixture with the reviewed research pack", () => {
+    expect(builtInRegistry.getPackForOutcome("import-regulated-product")).toMatchObject({
+      id: "research.import-regulated-product",
+      lifecycle: "admitted",
+    });
   });
 
   it("resolves admitted research through the same natural-language and browse engine", () => {
