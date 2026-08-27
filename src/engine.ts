@@ -162,17 +162,6 @@ function materializeTask(
     : { result: true as const, missingFields: [] as readonly string[] };
   if (ruleEvaluation.result === false) return undefined;
 
-  const requiredAnswerGaps = (task.requiredAnswers ?? []).filter(
-    (field) => answers[field] === undefined || answers[field] === null,
-  );
-  const missingAnswers = unique([
-    ...ruleEvaluation.missingFields,
-    ...requiredAnswerGaps,
-  ]);
-  const applicability: Applicability =
-    ruleEvaluation.result === "unknown" || missingAnswers.length > 0
-      ? "unknown"
-      : true;
   const journey = task.journeyId
     ? pack.journeys.find((candidate) => candidate.id === task.journeyId)
     : undefined;
@@ -189,6 +178,23 @@ function materializeTask(
       ? [materializeClaim(definition, pack, answers, jurisdiction, now)]
       : [];
   });
+  const requiredAnswerGaps = (task.requiredAnswers ?? []).filter(
+    (field) => answers[field] === undefined || answers[field] === null,
+  );
+  const claimApplicabilityGaps = evidence.flatMap((claim) =>
+    claim.applicability === "unknown" && claim.appliesWhen
+      ? evaluateRule(claim.appliesWhen, answers).missingFields
+      : [],
+  );
+  const missingAnswers = unique([
+    ...ruleEvaluation.missingFields,
+    ...requiredAnswerGaps,
+    ...claimApplicabilityGaps,
+  ]);
+  const applicability: Applicability =
+    ruleEvaluation.result === "unknown" || missingAnswers.length > 0
+      ? "unknown"
+      : true;
   const allEvidenceAdmitted =
     evidence.length === requiredClaimIds.length &&
     evidence.every(
@@ -310,7 +316,7 @@ function questionsForRoadmap(
     if (answers[question.factKey] !== undefined && answers[question.factKey] !== null) {
       return [];
     }
-    if (question.askWhen && evaluateRule(question.askWhen, answers).result === false) {
+    if (question.askWhen && evaluateRule(question.askWhen, answers).result !== true) {
       return [];
     }
     const blocksTaskIds = tasks

@@ -1,0 +1,637 @@
+{
+  "manifest_version": "1.0.0",
+  "release_version": "rolling-v1",
+  "publication_state": "rolling",
+  "generated_at": "2026-08-28T01:17:41+05:30",
+  "verification_date": "2026-08-28",
+  "checkpoint_target": "2026-08-28T02:50:00+05:30",
+  "schema": "government-outcome-pack.schema.json",
+  "pack_id_scope": "IDs are pack-local; ingest with (pack_id, id) as the composite key.",
+  "admission_policy": {
+    "primary_source_only_for_actionable_facts": true,
+    "verified_only_drives_happy_path": true,
+    "non_verified_statuses": [
+      "Candidate",
+      "Conflict",
+      "Stale",
+      "Unavailable"
+    ],
+    "missing_classification_eligibility_money_or_procedure": "Action Required",
+    "public_private_provenance": "Official sources establish public requirements; users and necessary private or regulated actors supply case facts and documents."
+  },
+  "portfolio_status": "STRUCTURALLY_VALID",
+  "independent_review": {
+    "status": "pending",
+    "overall_verdict": null,
+    "file": null,
+    "note": "Independent all-pack evidence/conflict review is still running."
+  },
+  "totals": {
+    "packs": 7,
+    "tasks": 146,
+    "dependency_edges": 204,
+    "claims": 323,
+    "sources": 201,
+    "conflicts": 12,
+    "coverage_gaps": 64,
+    "claims_Verified": 284,
+    "claims_Candidate": 16,
+    "claims_Conflict": 10,
+    "claims_Stale": 3,
+    "claims_Unavailable": 10
+  },
+  "packs": [
+    {
+      "pack_id": "journey.import-regulated-product.india",
+      "title": "Import and legally sell a first regulated product shipment in India",
+      "user_outcome": "An Indian importer can identify and complete the central-government and necessary regulated-actor steps for a first commercial import, obtain customs release, and hold sale until every applicable product, tax, packaging and environmental gate has evidence.",
+      "overall_readiness": "Action Required",
+      "verification_date": "2026-08-28",
+      "files": {
+        "json": "packs/01-import-regulated-product.json",
+        "markdown": "packs/01-import-regulated-product.md"
+      },
+      "sha256": {
+        "json": "85299d28ac5be8ba705b2d9a7c530226f71300092c7e9e5a3c838b84868ca2c4",
+        "markdown": "6ce6a1da428dee452cccac13bbcc7985125eaf4f43760bb13b0856cb00d502a3"
+      },
+      "schema_valid": true,
+      "counts": {
+        "tasks": 22,
+        "dependency_edges": 40,
+        "claims": 37,
+        "sources": 39,
+        "conflicts": 3,
+        "coverage_gaps": 14,
+        "claim_statuses": {
+          "Verified": 32,
+          "Candidate": 3,
+          "Conflict": 2,
+          "Stale": 0,
+          "Unavailable": 0
+        },
+        "source_tiers": {
+          "T1_AUTHORITY": 11,
+          "T1_LAW": 10,
+          "T1_PORTAL": 18
+        }
+      },
+      "demo_scenario": "Bounded demo: first sea shipment of new over-ear Bluetooth headphones",
+      "admission_note": "Only Verified claims are admitted to drive tasks; every other status remains an explicit gate."
+    },
+    {
+      "pack_id": "india.export.first-goods-order",
+      "title": "Export a first commercial goods order from India and complete payment realisation",
+      "user_outcome": "A first-time Indian exporter clears a commercial goods shipment, receives and reconciles the export proceeds through an authorised dealer bank, and obtains documentary realisation proof.",
+      "overall_readiness": "Action Required",
+      "verification_date": "2026-08-28",
+      "files": {
+        "json": "packs/02-export-first-order.json",
+        "markdown": "packs/02-export-first-order.md"
+      },
+      "sha256": {
+        "json": "3378fd90f066444f407ff370e6f7048cba116f5880194221667ad01f6499f42f",
+        "markdown": "98d42bfd4d03328a79e60e735e6c715a4011fa457d7a82832164a2017bf28020"
+      },
+      "schema_valid": true,
+      "counts": {
+        "tasks": 21,
+        "dependency_edges": 32,
+        "claims": 40,
+        "sources": 17,
+        "conflicts": 0,
+        "coverage_gaps": 8,
+        "claim_statuses": {
+          "Verified": 36,
+          "Candidate": 4,
+          "Conflict": 0,
+          "Stale": 0,
+          "Unavailable": 0
+        },
+        "source_tiers": {
+          "T1_AUTHORITY": 1,
+          "T1_LAW": 7,
+          "T1_PORTAL": 9
+        }
+      },
+      "demo_scenario": "Bounded demo — first GST-registered micro exporter, simple goods, full advance",
+      "admission_note": "Only Verified claims are admitted to drive tasks; every other status remains an explicit gate."
+    },
+    {
+      "pack_id": "journey3.incorporate-hire.india-central",
+      "title": "Incorporate an Indian company, hire the first employee, and complete initial Central compliance",
+      "user_outcome": "A qualifier-driven route from company choices to incorporation, first employment and the first applicable Central filings and remittances.",
+      "overall_readiness": "Action Required",
+      "verification_date": "2026-08-28",
+      "files": {
+        "json": "packs/03-incorporate-and-hire.json",
+        "markdown": "packs/03-incorporate-and-hire.md"
+      },
+      "sha256": {
+        "json": "a9699ffe461908d9cee1ab2268d06587408c5c9ea8204dd3b833b12f4f8c49bd",
+        "markdown": "73f16ea07fc6cb620e4f5b9d433d4eee5485268a66351e5b08830e40bff53a42"
+      },
+      "schema_valid": true,
+      "counts": {
+        "tasks": 23,
+        "dependency_edges": 35,
+        "claims": 50,
+        "sources": 34,
+        "conflicts": 2,
+        "coverage_gaps": 6,
+        "claim_statuses": {
+          "Verified": 44,
+          "Candidate": 4,
+          "Conflict": 2,
+          "Stale": 0,
+          "Unavailable": 0
+        },
+        "source_tiers": {
+          "T1_AUTHORITY": 14,
+          "T1_LAW": 16,
+          "T1_PORTAL": 4
+        }
+      },
+      "demo_scenario": "Two-founder private limited services company with one non-director employee",
+      "admission_note": "Only Verified claims are admitted to drive tasks; every other status remains an explicit gate."
+    },
+    {
+      "pack_id": "gon.central-procurement.first-bid.v1",
+      "title": "Become eligible for Central Government procurement and submit a first valid bid",
+      "user_outcome": "A supplier selects the tender-designated Central procurement channel, proves supplier and bid-specific eligibility, submits a complete signed bid before the portal deadline, and retains a portal acknowledgment that proves receipt but not correctness or award.",
+      "overall_readiness": "Action Required",
+      "verification_date": "2026-08-28",
+      "files": {
+        "json": "packs/04-central-procurement-first-bid.json",
+        "markdown": "packs/04-central-procurement-first-bid.md"
+      },
+      "sha256": {
+        "json": "efa6d5ff30b1d66f61f7849a081d6c0355d8c9f3eae41dcceadcb52753a318a3",
+        "markdown": "7bca1e09b903fed21751120549c9822b8f1cf91fcdf7e34ce26ae21cc2519772"
+      },
+      "schema_valid": true,
+      "counts": {
+        "tasks": 18,
+        "dependency_edges": 29,
+        "claims": 40,
+        "sources": 15,
+        "conflicts": 0,
+        "coverage_gaps": 8,
+        "claim_statuses": {
+          "Verified": 34,
+          "Candidate": 1,
+          "Conflict": 0,
+          "Stale": 1,
+          "Unavailable": 4
+        },
+        "source_tiers": {
+          "T1_AUTHORITY": 5,
+          "T1_LAW": 1,
+          "T1_PORTAL": 9
+        }
+      },
+      "demo_scenario": "InkBridge Supplies — first Central bid for IIT Dharwad printer ink/toner empanelment",
+      "admission_note": "Only Verified claims are admitted to drive tasks; every other status remains an explicit gate."
+    },
+    {
+      "pack_id": "journey.05.deceased-assets",
+      "title": "Discover and claim a deceased person's Central and regulated financial assets",
+      "user_outcome": "Build an evidence-backed inventory of possible assets, route each asset to the correct institution, and preserve separate proof of discovery, submission, and successful transmission or payment.",
+      "overall_readiness": "Action Required",
+      "verification_date": "2026-08-28",
+      "files": {
+        "json": "packs/05-deceased-assets.json",
+        "markdown": "packs/05-deceased-assets.md"
+      },
+      "sha256": {
+        "json": "0b1bf717db125308a2a1bd7ed3a0d76d29a9b8129ddda4fa06a12b85ec15940e",
+        "markdown": "c41bf83de83a6c6499c22c9123b9dd6e9d072d64d1117e44c629f1612bde60af"
+      },
+      "schema_valid": true,
+      "counts": {
+        "tasks": 27,
+        "dependency_edges": 30,
+        "claims": 47,
+        "sources": 27,
+        "conflicts": 2,
+        "coverage_gaps": 12,
+        "claim_statuses": {
+          "Verified": 40,
+          "Candidate": 0,
+          "Conflict": 3,
+          "Stale": 1,
+          "Unavailable": 3
+        },
+        "source_tiers": {
+          "T1_AUTHORITY": 17,
+          "T1_LAW": 2,
+          "T1_PORTAL": 3,
+          "T1_REGULATED_ACTOR": 5
+        }
+      },
+      "demo_scenario": "Bounded multi-asset example: Anita inventories Raj's possible assets",
+      "admission_note": "Only Verified claims are admitted to drive tasks; every other status remains an explicit gate."
+    },
+    {
+      "pack_id": "india.cyber-financial-fraud.v1",
+      "title": "Urgent cyber-financial-fraud containment and recovery journey",
+      "user_outcome": "Contain further loss, create usable bank and police records, pursue the correct transaction-specific dispute path, and reach either evidenced restoration/reversal or documented closure without overstating liability or recovery.",
+      "overall_readiness": "Action Required",
+      "verification_date": "2026-08-28",
+      "files": {
+        "json": "packs/06-cyber-financial-fraud.json",
+        "markdown": "packs/06-cyber-financial-fraud.md"
+      },
+      "sha256": {
+        "json": "ca3fe248600ed46900e933169980fee6f5755c10b3d329bba756b88c0275604f",
+        "markdown": "d6fccb4c45f9f4cbb3b8c1c97354459a9d781964869c99358cec4a1dcf87eeb5"
+      },
+      "schema_valid": true,
+      "counts": {
+        "tasks": 20,
+        "dependency_edges": 20,
+        "claims": 62,
+        "sources": 25,
+        "conflicts": 4,
+        "coverage_gaps": 7,
+        "claim_statuses": {
+          "Verified": 55,
+          "Candidate": 2,
+          "Conflict": 1,
+          "Stale": 1,
+          "Unavailable": 3
+        },
+        "source_tiers": {
+          "T1_AUTHORITY": 4,
+          "T1_LAW": 5,
+          "T1_PORTAL": 9,
+          "T1_REGULATED_ACTOR": 7
+        }
+      },
+      "demo_scenario": "SBI UPI collect-request scam reported within minutes - victim-authorised, no-guarantee demo",
+      "admission_note": "Only Verified claims are admitted to drive tasks; every other status remains an explicit gate."
+    },
+    {
+      "pack_id": "in.central.reusable-foundations.v1",
+      "title": "Reusable Central-Government Identity and Registration Foundations",
+      "user_outcome": "Establish and maintain only the national identifiers, portal identities and signature bindings that downstream business, employment, trade and public-procurement journeys actually require.",
+      "overall_readiness": "Action Required",
+      "verification_date": "2026-08-28",
+      "files": {
+        "json": "packs/07-reusable-foundations.json",
+        "markdown": "packs/07-reusable-foundations.md"
+      },
+      "sha256": {
+        "json": "a3560953519f866f4c3b86bab9d9f9c8de0a632b23486ab0e98e8941c2ff10d3",
+        "markdown": "f9695b9c9f22b23268fe6c3726dd3b5c874c2bb2f221a5da406b8adc4b5b4126"
+      },
+      "schema_valid": true,
+      "counts": {
+        "tasks": 15,
+        "dependency_edges": 18,
+        "claims": 47,
+        "sources": 44,
+        "conflicts": 1,
+        "coverage_gaps": 9,
+        "claim_statuses": {
+          "Verified": 43,
+          "Candidate": 2,
+          "Conflict": 2,
+          "Stale": 0,
+          "Unavailable": 0
+        },
+        "source_tiers": {
+          "T1_AUTHORITY": 15,
+          "T1_LAW": 5,
+          "T1_PORTAL": 22,
+          "T1_REGULATED_ACTOR": 2
+        }
+      },
+      "demo_scenario": "A bounded small manufacturer reuses foundations across startup, import, hiring and central procurement",
+      "admission_note": "Only Verified claims are admitted to drive tasks; every other status remains an explicit gate."
+    }
+  ],
+  "cross_pack_reuse": {
+    "shared_official_url_groups": [
+      {
+        "official_url": "https://content.dgft.gov.in/Website/IEC_Manual_V4.1.pdf",
+        "occurrences": [
+          {
+            "pack_id": "india.export.first-goods-order",
+            "source_id": "src.iec-manual-v4-1",
+            "issuer": "Directorate General of Foreign Trade",
+            "title": "IEC Module User Help File V4.1"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "source_id": "src.dgft.iec-manual",
+            "issuer": "DGFT",
+            "title": "IEC Module User Help File V4.1"
+          }
+        ]
+      },
+      {
+        "official_url": "https://content.dgft.gov.in/Website/dgftprod/61d61bc2-272e-4880-b96c-c8f685a3b244/Foreign%20Trade%20Policy%202023.pdf",
+        "occurrences": [
+          {
+            "pack_id": "india.export.first-goods-order",
+            "source_id": "src.ftp-2023",
+            "issuer": "Directorate General of Foreign Trade",
+            "title": "Foreign Trade Policy 2023"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "source_id": "src.dgft.ftp",
+            "issuer": "DGFT",
+            "title": "Foreign Trade Policy 2023"
+          }
+        ]
+      },
+      {
+        "official_url": "https://old.rbi.org.in/commonman/english/scripts/faqs.aspx?id=3407",
+        "occurrences": [
+          {
+            "pack_id": "journey.05.deceased-assets",
+            "source_id": "s.rbi-ombudsman-2026",
+            "issuer": "Reserve Bank of India",
+            "title": "FAQs on Reserve Bank - Integrated Ombudsman Scheme, 2026"
+          },
+          {
+            "pack_id": "india.cyber-financial-fraud.v1",
+            "source_id": "cf.s14",
+            "issuer": "Reserve Bank of India",
+            "title": "FAQ - Reserve Bank Integrated Ombudsman Scheme, 2026"
+          }
+        ]
+      },
+      {
+        "official_url": "https://tutorial.gst.gov.in/userguide/registration/Application_for_Filing_Clarification.htm",
+        "occurrences": [
+          {
+            "pack_id": "journey.import-regulated-product.india",
+            "source_id": "src.gst-clarification",
+            "issuer": "Goods and Services Tax Network",
+            "title": "Application for Filing Clarification"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "source_id": "src.gst.clarification",
+            "issuer": "GST Common Portal / GSTN",
+            "title": "Application for Filing Clarification"
+          }
+        ]
+      },
+      {
+        "official_url": "https://tutorial.gst.gov.in/userguide/registration/FAQs_Aadhaar_Authentication.htm",
+        "occurrences": [
+          {
+            "pack_id": "journey.import-regulated-product.india",
+            "source_id": "src.gst-registration-tutorial",
+            "issuer": "Goods and Services Tax Network",
+            "title": "GST Registration — Aadhaar Authentication FAQ"
+          },
+          {
+            "pack_id": "journey3.incorporate-hire.india-central",
+            "source_id": "s.gst-aadhaar",
+            "issuer": "Goods and Services Tax Network",
+            "title": "Aadhaar authentication for registration FAQ"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "source_id": "src.gst.aadhaar",
+            "issuer": "GST Common Portal / GSTN",
+            "title": "FAQs Aadhaar Authentication for Registration"
+          }
+        ]
+      },
+      {
+        "official_url": "https://tutorial.gst.gov.in/userguide/taxpayersdashboard/View___Download_Certificates.htm",
+        "occurrences": [
+          {
+            "pack_id": "journey.import-regulated-product.india",
+            "source_id": "src.gst-certificate",
+            "issuer": "Goods and Services Tax Network",
+            "title": "View / Download Certificates"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "source_id": "src.gst.certificate",
+            "issuer": "GST Common Portal / GSTN",
+            "title": "View / Download Certificates"
+          }
+        ]
+      },
+      {
+        "official_url": "https://ui.gem.gov.in/login",
+        "occurrences": [
+          {
+            "pack_id": "gon.central-procurement.first-bid.v1",
+            "source_id": "src.gem-login",
+            "issuer": "Government e-Marketplace",
+            "title": "GeM transactional login"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "source_id": "src.gem.login",
+            "issuer": "Government e-Marketplace",
+            "title": "GeM New Login and Sign Up"
+          }
+        ]
+      },
+      {
+        "official_url": "https://www.icegate.gov.in/icegate-services/registration",
+        "occurrences": [
+          {
+            "pack_id": "journey.import-regulated-product.india",
+            "source_id": "src.icegate-registration",
+            "issuer": "ICEGATE / CBIC",
+            "title": "ICEGATE Registration services"
+          },
+          {
+            "pack_id": "india.export.first-goods-order",
+            "source_id": "src.icegate-registration-index",
+            "issuer": "ICEGATE / CBIC",
+            "title": "Registration service index"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "source_id": "src.icegate.registration-services",
+            "issuer": "ICEGATE / CBIC",
+            "title": "Registration Services"
+          }
+        ]
+      },
+      {
+        "official_url": "https://www.icegate.gov.in/sites/default/files/2023-12/Registration-FAQ%20%281%29.pdf",
+        "occurrences": [
+          {
+            "pack_id": "journey.import-regulated-product.india",
+            "source_id": "src.icegate-registration-faq",
+            "issuer": "ICEGATE / CBIC",
+            "title": "ICEGATE Registration FAQ"
+          },
+          {
+            "pack_id": "india.export.first-goods-order",
+            "source_id": "src.icegate-registration-faq",
+            "issuer": "Directorate General of Systems and Data Management, CBIC",
+            "title": "Registration FAQ ICEGATE 2.0 v1.01"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "source_id": "src.icegate.registration-faq",
+            "issuer": "ICEGATE / CBIC Directorate General of Systems",
+            "title": "Registration FAQ ICEGATE 2.0"
+          }
+        ]
+      },
+      {
+        "official_url": "https://www.udyamregistration.gov.in/",
+        "occurrences": [
+          {
+            "pack_id": "gon.central-procurement.first-bid.v1",
+            "source_id": "src.udyam",
+            "issuer": "Ministry of Micro, Small and Medium Enterprises",
+            "title": "Udyam Registration Portal"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "source_id": "src.udyam.portal",
+            "issuer": "Ministry of Micro, Small and Medium Enterprises",
+            "title": "Udyam Registration Portal"
+          }
+        ]
+      }
+    ],
+    "exact_normalized_claim_statement_groups": [],
+    "raw_id_collisions": [
+      {
+        "id": "i.bank-proof",
+        "occurrences": [
+          {
+            "pack_id": "journey3.incorporate-hire.india-central",
+            "section": "required_inputs"
+          },
+          {
+            "pack_id": "journey.05.deceased-assets",
+            "section": "required_inputs"
+          }
+        ]
+      },
+      {
+        "id": "in.bank-proof",
+        "occurrences": [
+          {
+            "pack_id": "gon.central-procurement.first-bid.v1",
+            "section": "required_inputs"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "section": "required_inputs"
+          }
+        ]
+      },
+      {
+        "id": "in.dsc-token",
+        "occurrences": [
+          {
+            "pack_id": "gon.central-procurement.first-bid.v1",
+            "section": "required_inputs"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "section": "required_inputs"
+          }
+        ]
+      },
+      {
+        "id": "in.gstin",
+        "occurrences": [
+          {
+            "pack_id": "gon.central-procurement.first-bid.v1",
+            "section": "required_inputs"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "section": "required_inputs"
+          }
+        ]
+      },
+      {
+        "id": "in.pan",
+        "occurrences": [
+          {
+            "pack_id": "gon.central-procurement.first-bid.v1",
+            "section": "required_inputs"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "section": "required_inputs"
+          }
+        ]
+      },
+      {
+        "id": "portal.dgft-iec",
+        "occurrences": [
+          {
+            "pack_id": "journey.import-regulated-product.india",
+            "section": "portal_journeys"
+          },
+          {
+            "pack_id": "india.export.first-goods-order",
+            "section": "portal_journeys"
+          }
+        ]
+      },
+      {
+        "id": "portal.icegate-registration",
+        "occurrences": [
+          {
+            "pack_id": "journey.import-regulated-product.india",
+            "section": "portal_journeys"
+          },
+          {
+            "pack_id": "india.export.first-goods-order",
+            "section": "portal_journeys"
+          }
+        ]
+      },
+      {
+        "id": "proof.iec",
+        "occurrences": [
+          {
+            "pack_id": "journey.import-regulated-product.india",
+            "section": "completion_proofs"
+          },
+          {
+            "pack_id": "india.export.first-goods-order",
+            "section": "completion_proofs"
+          },
+          {
+            "pack_id": "in.central.reusable-foundations.v1",
+            "section": "completion_proofs"
+          }
+        ]
+      },
+      {
+        "id": "src.icegate-registration-faq",
+        "occurrences": [
+          {
+            "pack_id": "journey.import-regulated-product.india",
+            "section": "sources"
+          },
+          {
+            "pack_id": "india.export.first-goods-order",
+            "section": "sources"
+          }
+        ]
+      }
+    ],
+    "treatment": "Shared URLs and claim statements are reuse candidates, not automatic equivalence. Preserve pack applicability and locator before deduplicating."
+  },
+  "known_release_limits": [
+    "A structurally valid pack is not a universal legal-clearance conclusion.",
+    "Candidate, Conflict, Stale and Unavailable claims remain explicit gates.",
+    "Login-gated case status, user facts and regulated/private documents are not proven by public guidance.",
+    "State/local, judicial and foreign-country dependencies remain bounded rather than generalized."
+  ]
+}

@@ -43,6 +43,7 @@ export type ClaimStatus =
   | "superseded";
 
 export type ClaimKind =
+  | "research-assertion"
   | "legal-obligation"
   | "eligibility"
   | "required-information"

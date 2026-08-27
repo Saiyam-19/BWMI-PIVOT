@@ -32,6 +32,14 @@ All IDs are registry-global. References are restricted to the same pack, so one 
 
 Changing a pack from `fixture` to `admitted` is a release decision, not a formatting change. Even in an admitted pack, any stale, conflicting, unverified, jurisdiction-mismatched or fact-unknown claim causes instructions to be withheld at runtime.
 
+## Rolling research adapter
+
+Research artifacts using the separate `government-outcome-pack` schema enter through `src/packs/research/normalize.ts`. Published inputs are explicitly allowlisted and hash-pinned; no directory scan can silently admit a new file. The adapter preserves the original artifacts and provenance while producing ordinary `KnowledgePackV1` data, so registry and engine behavior do not depend on a research-specific code path.
+
+Free-text applicability is never guessed. The adapter creates deterministic, namespaced task/claim facts, excludes inaccessible evidence from actionable closure, uses a same-day review window when research supplies no review-due date, and synthesizes non-verified gap claims wherever an exact start, instruction or completion-proof closure is absent.
+
+See [the 2026-08-28 rolling integration record](research-integration-2026-08-28.md) for hashes, exact rejections and the research-task handback.
+
 ## AI constraint
 
 An intent provider receives only approved outcome, task and question IDs. Its response is validated before roadmap generation. It can select those IDs and return primitive values for approved fact keys; it has no interface for supplying claims, journeys, URLs, fees, deadlines or completion proofs.

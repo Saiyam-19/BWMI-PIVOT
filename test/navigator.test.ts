@@ -4,6 +4,7 @@ import {
   CompletionProofRequiredError,
   InvalidTaskTransitionError,
   buildRoadmap,
+  builtInRegistry,
   confirmTaskCompletion,
   createRegistry,
   getAvailableNextActions,
@@ -157,28 +158,22 @@ describe("adaptive fail-closed graphs", () => {
   });
 
   it("keeps state dependencies visible without instructions", () => {
+    const pack = builtInRegistry.getPackForOutcome("post-death-regulated-assets");
+    if (!pack) throw new Error("Missing post-death research pack.");
     const roadmap = buildRoadmap({
       entry: { kind: "browse", outcomeId: "post-death-regulated-assets" },
-      answers: {
-        deathCertificateAvailable: true,
-        relationship: "child",
-        nominationKnown: false,
-        hasEpfo: true,
-        hasNps: true,
-        hasBankAccounts: true,
-        hasSecurities: true,
-      },
+      answers: Object.fromEntries(
+        pack.questions.map((question) => [question.factKey, true]),
+      ),
     });
-    const task = roadmap.tasks.find(
-      (candidate) => candidate.id === "obtain-state-succession-proof",
-    );
+    const task = roadmap.tasks.find((candidate) => candidate.authority.type === "state");
 
     expect(task).toMatchObject({
       classification: "outside-scope",
       actionability: "withheld",
       authority: { type: "state" },
     });
-    expect(task?.journey?.instructions).toEqual([]);
+    expect(task?.journey?.instructions ?? []).toEqual([]);
     expect(task?.blockers).toContain(
       "State-specific instructions are not supported in V1.",
     );

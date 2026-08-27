@@ -13,7 +13,7 @@ The functional core now includes:
 - in-memory and owner-only local-file roadmap repositories; and
 - privacy-safe shareable output.
 
-The built-in import and post-death packs are deliberately `fixture` lifecycle packs. They prove graph behavior but cannot expose procedural instructions until reviewed research is admitted.
+The built-in regulated-import pack remains a non-actionable fixture while its rolling research artifact finishes validation. Hash-pinned admitted packs now cover Central procurement, post-death regulated assets and reusable Central foundations. Their incomplete claims and routes remain visible but non-actionable through the same engine.
 
 ## Commands
 
@@ -44,4 +44,4 @@ const roadmap = await navigator.start({
 });
 ```
 
-See [the product contract](docs/product-contract.md), [domain language](docs/domain-language.md), and [content-pack integration seam](docs/content-pack-integration.md).
+See [the product contract](docs/product-contract.md), [domain language](docs/domain-language.md), [content-pack integration seam](docs/content-pack-integration.md), and [rolling research integration record](docs/research-integration-2026-08-28.md).

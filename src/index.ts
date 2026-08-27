@@ -23,6 +23,22 @@ export {
 export { deterministicIntentProvider } from "./intent.js";
 
 export {
+  ResearchPackValidationError,
+  normalizeResearchPack,
+  researchAdmissionManifest,
+  researchIntegrationReports,
+} from "./packs/research/index.js";
+export type {
+  ResearchClaimProvenance,
+  ResearchImportIssue,
+  ResearchIntegrationReport,
+  ResearchPackImportResult,
+  ResearchPackProfile,
+  ResearchPackValidationIssue,
+  ResearchSourceProvenance,
+} from "./packs/research/index.js";
+
+export {
   FileRoadmapRepository,
   InMemoryRoadmapRepository,
   toShareableRoadmap,
