@@ -162,21 +162,39 @@ export function RoadmapPersonalization({
   const [value, setValue] = useState<AnswerValue>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  const [revisitFactKey, setRevisitFactKey] = useState<string>();
   const pendingQuestions = useMemo(
     () => roadmap.questions.filter(
       (candidate) => !Object.prototype.hasOwnProperty.call(roadmap.answers, candidate.factKey),
     ),
     [roadmap.answers, roadmap.questions],
   );
+  const unresolvedAnsweredQuestions = useMemo(
+    () => roadmap.questions.filter((candidate) =>
+      Object.prototype.hasOwnProperty.call(roadmap.answers, candidate.factKey),
+    ),
+    [roadmap.answers, roadmap.questions],
+  );
+  const unknownQuestions = useMemo(
+    () => unresolvedAnsweredQuestions.filter((candidate) => roadmap.answers[candidate.factKey] === null),
+    [roadmap.answers, unresolvedAnsweredQuestions],
+  );
+  const manualReviewQuestions = useMemo(
+    () => unresolvedAnsweredQuestions.filter((candidate) =>
+      roadmap.answers[candidate.factKey] !== null && candidate.resolutionMode === "manual-review",
+    ),
+    [roadmap.answers, unresolvedAnsweredQuestions],
+  );
   const question = useMemo(
-    () => pendingQuestions[0],
-    [pendingQuestions],
+    () => roadmap.questions.find((candidate) => candidate.factKey === revisitFactKey) ?? pendingQuestions[0],
+    [pendingQuestions, revisitFactKey, roadmap.questions],
   );
 
   useEffect(() => {
-    setValue(undefined);
+    const saved = question ? roadmap.answers[question.factKey] : undefined;
+    setValue(saved === null ? undefined : saved);
     setError(undefined);
-  }, [question?.factKey]);
+  }, [question?.factKey, roadmap.answers]);
 
   const leaveUnknown = async () => {
     if (!question) return;
@@ -187,6 +205,7 @@ export function RoadmapPersonalization({
         [question.factKey]: null,
       });
       onRoadmapUpdated(updated);
+      setRevisitFactKey(undefined);
       setOpen(false);
     } catch (caught) {
       setError(
@@ -208,6 +227,7 @@ export function RoadmapPersonalization({
         [question.factKey]: value!,
       });
       onRoadmapUpdated(updated);
+      setRevisitFactKey(undefined);
       setOpen(false);
     } catch (caught) {
       setError(
@@ -220,7 +240,18 @@ export function RoadmapPersonalization({
     }
   };
 
-  const countLabel = `${pendingQuestions.length} ${pendingQuestions.length === 1 ? "question" : "questions"} remaining`;
+  const affectedUnknownBranchCount = new Set(
+    unresolvedAnsweredQuestions.flatMap((candidate) => candidate.blocksTaskIds),
+  ).size;
+  const countLabel = `${pendingQuestions.length} ${pendingQuestions.length === 1 ? "question" : "questions"} left to answer`;
+  const unresolvedLabel = unknownQuestions.length > 0
+    ? `${unknownQuestions.length} left unknown · ${affectedUnknownBranchCount} affected ${affectedUnknownBranchCount === 1 ? "branch still needs" : "branches still need"} information`
+    : undefined;
+
+  const reviewQuestion = (candidate: RoadmapQuestion) => {
+    setRevisitFactKey(candidate.factKey);
+    setOpen(true);
+  };
 
   return (
     <>
@@ -235,6 +266,19 @@ export function RoadmapPersonalization({
           Personalize this roadmap
         </Button>
         <span className="text-xs font-medium text-slate-600" aria-live="polite">{countLabel}</span>
+        {unresolvedLabel ? (
+          <span className="text-xs font-semibold text-amber-800" aria-live="polite">{unresolvedLabel}</span>
+        ) : null}
+        {unknownQuestions.length > 0 ? (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => reviewQuestion(unknownQuestions[0]!)}
+            className="min-h-11 text-[#173f7a]"
+          >
+            Review unknown answers
+          </Button>
+        ) : null}
       </div>
 
       <Sheet open={open} onOpenChange={setOpen}>
@@ -281,9 +325,17 @@ export function RoadmapPersonalization({
                     {question.resolutionMode === "manual-review" ? (
                       <Alert className="border-blue-600 bg-blue-50 text-blue-950">
                         <CircleHelp aria-hidden="true" />
-                        <AlertTitle>Saved for manual review</AlertTitle>
+                        <AlertTitle>Informational — manual review required</AlertTitle>
                         <AlertDescription className="leading-6 text-blue-950">
                           This answer can be recorded, but it will not automatically unlock, exclude, or reorder work because the source does not provide safe executable decision logic.
+                        </AlertDescription>
+                      </Alert>
+                    ) : question.resolutionMode === "safe-effects" ? (
+                      <Alert className="border-emerald-600 bg-emerald-50 text-emerald-950">
+                        <CircleHelp aria-hidden="true" />
+                        <AlertTitle>Can safely personalize branches</AlertTitle>
+                        <AlertDescription className="leading-6 text-emerald-950">
+                          An exact listed answer may change only the reviewed affected branch. Other work and unknown facts remain fail-closed.
                         </AlertDescription>
                       </Alert>
                     ) : null}
@@ -297,12 +349,35 @@ export function RoadmapPersonalization({
                 ) : null}
               </>
             ) : (
-              <Alert className="border-emerald-600 bg-emerald-50 text-emerald-950">
-                <AlertTitle>No unanswered personalization questions</AlertTitle>
-                <AlertDescription className="text-emerald-950">
-                  Your roadmap remains evidence-gated and can be used as it is.
-                </AlertDescription>
-              </Alert>
+              <div className="grid gap-3">
+                <Alert className={unresolvedAnsweredQuestions.length > 0
+                  ? "border-amber-500 bg-amber-50 text-amber-950"
+                  : "border-emerald-600 bg-emerald-50 text-emerald-950"}
+                >
+                  <AlertTitle>No new questions left to answer</AlertTitle>
+                  <AlertDescription>
+                    {unresolvedAnsweredQuestions.length > 0
+                      ? "Saved unknowns and manual-review answers are still unresolved. Affected branches remain evidence-gated until supported information is available."
+                      : "All safely supported personalization questions have been handled. Evidence gates still apply to the roadmap."}
+                  </AlertDescription>
+                </Alert>
+                {unresolvedAnsweredQuestions.map((candidate) => (
+                  <Button
+                    key={candidate.factKey}
+                    type="button"
+                    variant="outline"
+                    onClick={() => setRevisitFactKey(candidate.factKey)}
+                    className="h-auto min-h-11 justify-start whitespace-normal border-slate-300 bg-white px-3 py-2 text-left shadow-none"
+                  >
+                    {roadmap.answers[candidate.factKey] === null ? "Review unknown" : "Review saved answer"}: {candidate.prompt}
+                  </Button>
+                ))}
+                {manualReviewQuestions.length > 0 ? (
+                  <p className="text-xs font-semibold text-blue-800">
+                    {manualReviewQuestions.length} saved {manualReviewQuestions.length === 1 ? "answer still needs" : "answers still need"} manual review.
+                  </p>
+                ) : null}
+              </div>
             )}
           </div>
 

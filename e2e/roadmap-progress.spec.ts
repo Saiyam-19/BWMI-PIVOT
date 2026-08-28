@@ -38,7 +38,8 @@ test("adverse and explicit-unknown authored answers remain fail-closed", async (
   expect(explicitlyUnknown.tasks.map(({ id, status, actionability }) => ({ id, status, actionability }))).toEqual(before);
 
   await page.goto(`/roadmaps/${unknown.id}`);
-  await expect(page.getByText(`${unknown.questions.length - 1} questions remaining`)).toBeVisible();
+  await expect(page.getByText(`${unknown.questions.length - 1} questions left to answer`)).toBeVisible();
+  await expect(page.getByText(/1 left unknown/)).toBeVisible();
   await page.getByRole("tab", { name: "Accessible list" }).click();
   const withheld = page.getByText("Instructions withheld").first();
   await expect(withheld).toBeVisible();
@@ -46,6 +47,40 @@ test("adverse and explicit-unknown authored answers remain fail-closed", async (
   const sheet = page.getByRole("dialog");
   await expect(sheet.getByText("Instructions withheld")).toBeVisible();
   await expect(sheet.getByRole("link", { name: /^Open / })).toHaveCount(0);
+});
+
+test("a reviewed exact answer changes only its declared branch in the visible roadmap", async ({ page, request }) => {
+  const seed = await createRoadmap(request, "export-first-commercial-order");
+  const question = seed.questions.find((candidate) => candidate.id.endsWith(":q.rcmc-benefit"));
+  expect(question).toMatchObject({ resolutionMode: "safe-effects", answerType: "boolean" });
+  const affectedTaskId = question!.blocksTaskIds[0]!;
+  const priorAnswers = Object.fromEntries(
+    seed.questions
+      .filter((candidate) => candidate.factKey !== question!.factKey)
+      .map((candidate) => [candidate.factKey, null]),
+  );
+  const roadmap = await createRoadmap(request, "export-first-commercial-order", priorAnswers);
+
+  await page.goto(`/roadmaps/${roadmap.id}`);
+  const tile = page.locator(`[data-task-id="${affectedTaskId}"]`);
+  await expect(tile).toHaveAttribute("data-status", "needs-information");
+  await page.getByRole("button", { name: /Personalize this roadmap/i }).click();
+  await expect(page.getByText("Can safely personalize branches")).toBeVisible();
+  await page.getByRole("button", { name: "Yes" }).click();
+  await page.getByRole("button", { name: "Save answer" }).click();
+  await expect(tile).not.toHaveAttribute("data-status", "needs-information");
+  await expect(page.getByRole("heading", { level: 1, name: roadmap.outcomeTitle })).toBeVisible();
+
+  const excludedRoadmap = await createRoadmap(request, "export-first-commercial-order", {
+    ...priorAnswers,
+    [question!.factKey]: false,
+  });
+  await page.goto(`/roadmaps/${excludedRoadmap.id}`);
+  await expect(page.locator(`[data-task-id="${affectedTaskId}"]`)).toHaveCount(0);
+  await expect(page.locator(`[data-excluded-task-id="${affectedTaskId}"]`)).toBeVisible();
+  await expect(page.locator(`[data-excluded-task-id="${affectedTaskId}"]`)).toContainText(
+    "marks this conditional branch not applicable",
+  );
 });
 
 test("task detail is proof-gated and completed progress survives reload", async ({ page, request }) => {

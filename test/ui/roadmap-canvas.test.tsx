@@ -74,6 +74,21 @@ describe("RoadmapCanvas", () => {
     expect(within(child!).getByText(/After Establish identity; Classify the product/i)).toBeInTheDocument();
   });
 
+  it("renders one traceable visible connector for every projected graph edge", () => {
+    const model = projectRoadmapGraph(roadmap);
+    const { container } = render(
+      <RoadmapCanvas model={model} selectedTaskId={null} onSelectTask={vi.fn()} />,
+    );
+
+    for (const edge of model.edges) {
+      const connectors = container.querySelectorAll(
+        `[data-roadmap-edge="${edge.id}"][data-edge-source="${edge.source}"][data-edge-target="${edge.target}"]`,
+      );
+      expect(connectors, edge.id).toHaveLength(1);
+      expect(connectors[0]?.querySelector("svg path"), edge.id).toBeInTheDocument();
+    }
+  });
+
   it("pairs status text and icon with visibly distinct bounded state treatments", () => {
     const { container } = render(
       <RoadmapCanvas

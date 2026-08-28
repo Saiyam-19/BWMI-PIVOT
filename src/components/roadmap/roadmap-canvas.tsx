@@ -20,7 +20,7 @@ import {
   ROADMAP_STATUS_LABELS,
   type RoadmapNodeStatus,
 } from "@/components/roadmap/roadmap-status";
-import type { RoadmapGraphModel, RoadmapGraphNode } from "@/lib/roadmap-graph";
+import type { RoadmapGraphEdge, RoadmapGraphModel, RoadmapGraphNode } from "@/lib/roadmap-graph";
 import { cn } from "@/lib/utils";
 
 type RoadmapCanvasProps = {
@@ -68,11 +68,15 @@ function roadmapStages(model: RoadmapGraphModel): RoadmapGraphNode[][] {
 function TaskTile({
   node,
   dependencies,
+  incomingEdges,
+  nodesById,
   selected,
   onSelect,
 }: {
   node: RoadmapGraphNode;
   dependencies: readonly RoadmapGraphNode[];
+  incomingEdges: readonly RoadmapGraphEdge[];
+  nodesById: ReadonlyMap<string, RoadmapGraphNode>;
   selected: boolean;
   onSelect: () => void;
 }) {
@@ -110,7 +114,50 @@ function TaskTile({
         <CornerDownRight className="mt-0.5 size-3 shrink-0 text-blue-700" aria-hidden="true" />
         <span>{dependencyLabel}</span>
       </span>
+      <span className="mt-2 grid gap-1.5 border-t border-slate-900/20 pt-2">
+        {incomingEdges.map((edge) => (
+          <RoadmapEdgeConnector key={edge.id} edge={edge} source={nodesById.get(edge.source)} />
+        ))}
+      </span>
     </button>
+  );
+}
+
+function RoadmapEdgeConnector({
+  edge,
+  source,
+}: {
+  edge: RoadmapGraphEdge;
+  source: RoadmapGraphNode | undefined;
+}) {
+  const sourceLabel = source?.kind === "outcome"
+    ? "Selected outcome"
+    : source?.title ?? edge.source;
+  return (
+    <span
+      data-roadmap-edge={edge.id}
+      data-edge-source={edge.source}
+      data-edge-target={edge.target}
+      className="inline-flex max-w-full min-w-0 items-center gap-2 text-[10px] font-semibold leading-4 text-slate-700"
+      aria-label={`Dependency connector from ${sourceLabel} to this branch`}
+    >
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 42 12"
+        className="h-3 w-10 shrink-0 overflow-visible text-blue-700"
+        fill="none"
+      >
+        <path
+          d="M1 6 H35 M31 2 L36 6 L31 10"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray={edge.kind === "conditional" || edge.kind === "excluded" ? "3 3" : undefined}
+        />
+      </svg>
+      <span className="min-w-0 flex-1 truncate">From {sourceLabel}</span>
+    </span>
   );
 }
 
@@ -128,12 +175,16 @@ const statusIcons: Readonly<Record<RoadmapNodeStatus, LucideIcon>> = {
 function TaskBranch({
   nodes,
   dependenciesByTaskId,
+  incomingEdgesByTargetId,
+  nodesById,
   side,
   selectedTaskId,
   onSelectTask,
 }: {
   nodes: RoadmapGraphNode[];
   dependenciesByTaskId: ReadonlyMap<string, readonly RoadmapGraphNode[]>;
+  incomingEdgesByTargetId: ReadonlyMap<string, readonly RoadmapGraphEdge[]>;
+  nodesById: ReadonlyMap<string, RoadmapGraphNode>;
   side: "left" | "right";
   selectedTaskId: string | null;
   onSelectTask: (taskId: string) => void;
@@ -157,6 +208,8 @@ function TaskBranch({
           key={node.id}
           node={node}
           dependencies={dependenciesByTaskId.get(node.id) ?? []}
+          incomingEdges={incomingEdgesByTargetId.get(node.id) ?? []}
+          nodesById={nodesById}
           selected={selectedTaskId === node.id}
           onSelect={() => onSelectTask(node.id)}
         />
@@ -179,6 +232,17 @@ export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCa
     }
     return dependencies;
   }, [model]);
+  const nodesById = useMemo(
+    () => new Map(model.nodes.map((node) => [node.id, node])),
+    [model.nodes],
+  );
+  const incomingEdgesByTargetId = useMemo(() => {
+    const incoming = new Map<string, RoadmapGraphEdge[]>();
+    for (const edge of model.edges) {
+      incoming.set(edge.target, [...(incoming.get(edge.target) ?? []), edge]);
+    }
+    return incoming;
+  }, [model.edges]);
   const outcome = model.nodes.find((node) => node.kind === "outcome");
   const state = model.nodes.find((node) => node.kind === "state");
   const excluded = model.nodes.filter((node) => node.kind === "excluded");
@@ -229,6 +293,8 @@ export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCa
                       <TaskBranch
                         nodes={nodes}
                         dependenciesByTaskId={dependenciesByTaskId}
+                        incomingEdgesByTargetId={incomingEdgesByTargetId}
+                        nodesById={nodesById}
                         side={side}
                         selectedTaskId={selectedTaskId}
                         onSelectTask={onSelectTask}
@@ -255,6 +321,11 @@ export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCa
                 <div>
                   <h3 className="font-black text-slate-950">{state.title}</h3>
                   {state.summary ? <p className="mt-1 text-sm leading-6 text-slate-700">{state.summary}</p> : null}
+                  <span className="mt-3 block">
+                    {(incomingEdgesByTargetId.get(state.id) ?? []).map((edge) => (
+                      <RoadmapEdgeConnector key={edge.id} edge={edge} source={nodesById.get(edge.source)} />
+                    ))}
+                  </span>
                 </div>
               </div>
             </div>
@@ -268,9 +339,18 @@ export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCa
               </p>
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                 {excluded.map((node) => (
-                  <li key={node.id} className="rounded-sm border border-slate-300 bg-white px-3 py-2">
+                  <li
+                    key={node.id}
+                    data-excluded-task-id={node.id.replace(/^excluded:/, "")}
+                    className="rounded-sm border border-slate-300 bg-white px-3 py-2"
+                  >
                     <span className="block text-sm font-bold text-slate-800">{node.title}</span>
                     {node.summary ? <span className="mt-1 block text-xs leading-5 text-slate-600">{node.summary}</span> : null}
+                    <span className="mt-2 grid gap-1">
+                      {(incomingEdgesByTargetId.get(node.id) ?? []).map((edge) => (
+                        <RoadmapEdgeConnector key={edge.id} edge={edge} source={nodesById.get(edge.source)} />
+                      ))}
+                    </span>
                   </li>
                 ))}
               </ul>

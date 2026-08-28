@@ -142,10 +142,16 @@ describe("admitted outcome portfolio", () => {
         { entry: { kind: "browse", outcomeId: outcome.id } },
         { now: verificationDate },
       );
+      const pack = builtInRegistry.getPackForOutcome(outcome.id)!;
+      const manualAnswers = Object.fromEntries(
+        Object.entries(answersFor(outcome.id)).filter(([factKey]) =>
+          pack.questions.find((question) => question.factKey === factKey)?.resolutionMode === "manual-review",
+        ),
+      );
       const answered = buildRoadmap(
         {
           entry: { kind: "browse", outcomeId: outcome.id },
-          answers: answersFor(outcome.id),
+          answers: manualAnswers,
         },
         { now: verificationDate },
       );

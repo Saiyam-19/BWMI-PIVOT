@@ -160,12 +160,36 @@ function safeJourney(
 
 function answerResolvesQuestion(
   pack: KnowledgePackV1,
+  taskId: string,
   factKey: string,
   answers: Answers,
 ): boolean {
   const question = pack.questions.find((candidate) => candidate.factKey === factKey);
   if (question?.resolutionMode === "manual-review") return false;
-  return answers[factKey] !== undefined && answers[factKey] !== null;
+  const answer = answers[factKey];
+  if (answer === undefined || answer === null) return false;
+  if (question?.resolutionMode === "safe-effects") {
+    return question.taskEffects?.some((effect) =>
+      effect.taskId === taskId && effect.effect === "resolve-gate" && effect.when === answer,
+    ) ?? false;
+  }
+  return true;
+}
+
+function answerExcludesTask(
+  pack: KnowledgePackV1,
+  taskId: string,
+  answers: Answers,
+) {
+  for (const question of pack.questions) {
+    if (question.resolutionMode !== "safe-effects") continue;
+    const answer = answers[question.factKey];
+    const effect = question.taskEffects?.find((candidate) =>
+      candidate.taskId === taskId && candidate.effect === "exclude" && candidate.when === answer,
+    );
+    if (effect) return { question, effect };
+  }
+  return undefined;
 }
 
 function materializeTask(
@@ -175,6 +199,7 @@ function materializeTask(
   jurisdiction: Jurisdiction,
   now: Date,
 ): RoadmapTask | undefined {
+  if (answerExcludesTask(pack, task.id, answers)) return undefined;
   const ruleEvaluation = task.appliesWhen
     ? evaluateRule(task.appliesWhen, answers)
     : { result: true as const, missingFields: [] as readonly string[] };
@@ -197,7 +222,7 @@ function materializeTask(
       : [];
   });
   const requiredAnswerGaps = (task.requiredAnswers ?? []).filter(
-    (field) => !answerResolvesQuestion(pack, field, answers),
+    (field) => !answerResolvesQuestion(pack, task.id, field, answers),
   );
   const claimApplicabilityGaps = evidence.flatMap((claim) =>
     claim.applicability === "unknown" && claim.appliesWhen
@@ -335,13 +360,6 @@ function questionsForRoadmap(
   return outcome.questionIds.flatMap((questionId) => {
     const question = pack.questions.find((candidate) => candidate.id === questionId);
     if (!question) return [];
-    if (
-      question.resolutionMode !== "manual-review" &&
-      answers[question.factKey] !== undefined &&
-      answers[question.factKey] !== null
-    ) {
-      return [];
-    }
     if (question.askWhen && evaluateRule(question.askWhen, answers).result !== true) {
       return [];
     }
@@ -419,15 +437,18 @@ export function buildRoadmap(
     questions,
     tasks,
     excludedTasks: outcomeTasks.flatMap((task) => {
+      const answerExclusion = answerExcludesTask(pack, task.id, answers);
       const applies = task.appliesWhen
         ? evaluateRule(task.appliesWhen, answers).result
         : true;
-      return applies === false
+      return applies === false || answerExclusion
         ? [
             {
               id: task.id,
               title: task.title,
-              reason: "The current answers make this task inapplicable.",
+              reason: answerExclusion
+                ? `Your answer to “${answerExclusion.question.prompt}” marks this conditional branch not applicable.`
+                : "The current answers make this task inapplicable.",
               classification: "not-applicable" as const,
               applicability: false as const,
             },

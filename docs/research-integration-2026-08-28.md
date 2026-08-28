@@ -88,10 +88,14 @@ All instructions are withheld when applicability facts are absent. A task being
 actionable on the verification date is not proof that a real user's private
 facts, eligibility or completion requirements are satisfied.
 
-## Preserved but not executable
+## Bounded executable mappings
 
-- Free-text `qualifying_questions[*].blocking_logic` is preserved but replaced
-  at runtime by deterministic confirmation facts.
+- Free-text `qualifying_questions[*].blocking_logic` is preserved and never
+  parsed or executed. A small reviewed table may map exact boolean or
+  single-select values to an exact affected task's gate or exclusion when the
+  structured question, option and `affects_task_ids` fields make that effect
+  mechanically unambiguous. Every unmapped answer remains manual-review and
+  fail-closed.
 - `fees_duties` and `timelines` stay in the source snapshot because the runtime
   model does not yet have atomic applicability and measure fields for them.
 - Dependency relation/condition prose is preserved; explicit prerequisite task

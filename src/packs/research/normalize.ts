@@ -9,6 +9,7 @@ import {
   type JourneyStepDefinition,
   type KnowledgePackV1,
   type QuestionDefinition,
+  type QuestionTaskEffect,
   type TaskDefinition,
 } from "../../domain.js";
 
@@ -515,6 +516,76 @@ const entityId = (packId: string, type: string, originalId: string): string =>
 const questionFactKey = (packId: string, questionId: string): string =>
   entityId(packId, "fact.question", questionId);
 
+interface ReviewedQuestionEffect {
+  readonly taskId: string;
+  readonly when: boolean | string;
+  readonly effect: QuestionTaskEffect["effect"];
+}
+
+/**
+ * Human-reviewed, mechanically exact mappings from structured pack fields.
+ * Deliberately keyed by pack/question/task IDs so prose blocking logic can never
+ * become executable by accident.
+ */
+const reviewedQuestionEffects: Readonly<Record<string, readonly ReviewedQuestionEffect[]>> = {
+  "research.export-first-commercial-order:q.rcmc-benefit": [
+    { taskId: "task.rcmc", when: true, effect: "resolve-gate" },
+    { taskId: "task.rcmc", when: false, effect: "exclude" },
+  ],
+  "research.reusable-foundations:q.tan.deductor-collector": [
+    { taskId: "t.tan.obtain-maintain", when: "Yes", effect: "resolve-gate" },
+    { taskId: "t.tan.obtain-maintain", when: "No", effect: "exclude" },
+    { taskId: "t.tan.obtain-maintain", when: "Exempt PAN-instead case confirmed", effect: "exclude" },
+  ],
+};
+
+function normalizedReviewedEffects(
+  profile: ResearchPackProfile,
+  question: ResearchQuestion,
+  answerType: QuestionDefinition["answerType"],
+): readonly QuestionTaskEffect[] | undefined {
+  const effects = reviewedQuestionEffects[`${profile.packId}:${question.id}`];
+  if (!effects) return undefined;
+
+  const errors = effects.flatMap((effect) => {
+    if (!question.affects_task_ids.includes(effect.taskId)) {
+      return [{
+        path: `qualifying_questions.${question.id}.affects_task_ids`,
+        message: `Reviewed effect task ${effect.taskId} is not declared by the structured question.`,
+      }];
+    }
+    if (answerType === "boolean" && typeof effect.when !== "boolean") {
+      return [{
+        path: `qualifying_questions.${question.id}.answer_type`,
+        message: "Reviewed boolean effects must use exact boolean values.",
+      }];
+    }
+    if (
+      answerType === "single_select" &&
+      (typeof effect.when !== "string" || !question.options.includes(effect.when))
+    ) {
+      return [{
+        path: `qualifying_questions.${question.id}.options`,
+        message: `Reviewed effect value ${String(effect.when)} is not an exact authored option.`,
+      }];
+    }
+    if (answerType !== "boolean" && answerType !== "single_select") {
+      return [{
+        path: `qualifying_questions.${question.id}.answer_type`,
+        message: `Reviewed effects are not supported for ${answerType} questions.`,
+      }];
+    }
+    return [];
+  });
+  if (errors.length > 0) throw new ResearchPackValidationError(errors);
+
+  return effects.map((effect) => ({
+    taskId: entityId(profile.packId, "task", effect.taskId),
+    when: effect.when,
+    effect: effect.effect,
+  }));
+}
+
 const supportedAnswerTypes = new Set<QuestionDefinition["answerType"]>([
   "boolean",
   "single_select",
@@ -632,6 +703,7 @@ export function normalizeResearchPack(
 
   const questions: QuestionDefinition[] = research.qualifying_questions.map((question) => {
     const answerType = mapAnswerType(question.answer_type, question.id);
+    const taskEffects = normalizedReviewedEffects(profile, question, answerType);
     return {
       id: entityId(profile.packId, "question", question.id),
       factKey: questionFactKey(profile.packId, question.id),
@@ -639,7 +711,8 @@ export function normalizeResearchPack(
       reason: question.why_it_matters,
       answerType,
       options: question.options,
-      resolutionMode: "manual-review",
+      resolutionMode: taskEffects ? "safe-effects" : "manual-review",
+      ...(taskEffects ? { taskEffects } : {}),
       ...(answerType === "document"
         ? {
             unsupportedReason:
@@ -984,7 +1057,7 @@ export function normalizeResearchPack(
       code: "free-text-blocking-logic-not-mapped",
       disposition: "not-mapped",
       path: "qualifying_questions[*].blocking_logic",
-      message: "Authored typed questions and options are preserved. Free-text blocking logic is not coerced into executable applicability rules; affected tasks remain needs-information until a supported answer is provided.",
+      message: "Authored typed questions and options are preserved. Only reviewed exact-value mappings from structured question fields are executable; free-text blocking logic is never parsed and all other affected tasks remain needs-information.",
     },
     {
       code: "measures-not-mapped",

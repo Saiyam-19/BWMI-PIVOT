@@ -76,7 +76,6 @@ describe("published research admission", () => {
   it.each([
     ["import-regulated-product", "q.condition", "Waste or scrap"],
     ["import-regulated-product", "q.battery-waste-packaging", ["Unknown"]],
-    ["export-first-commercial-order", "q.rcmc-benefit", false],
   ] as const)(
     "keeps adverse authored answers fail-closed for %s %s",
     (outcomeId, questionSuffix, answer) => {
@@ -105,6 +104,76 @@ describe("published research admission", () => {
       )).toBe(true);
     },
   );
+
+  it("applies only an explicitly reviewed boolean effect to its exact task", () => {
+    const initial = buildRoadmap({
+      entry: { kind: "browse", outcomeId: "export-first-commercial-order" },
+    });
+    const question = initial.questions.find((candidate) =>
+      candidate.id.endsWith(":q.rcmc-benefit"),
+    );
+    expect(question).toMatchObject({
+      answerType: "boolean",
+      resolutionMode: "safe-effects",
+    });
+    expect(question?.taskEffects).toEqual([
+      expect.objectContaining({ taskId: question?.blocksTaskIds[0], when: true, effect: "resolve-gate" }),
+      expect.objectContaining({ taskId: question?.blocksTaskIds[0], when: false, effect: "exclude" }),
+    ]);
+
+    const affectedTaskId = question!.blocksTaskIds[0]!;
+    const before = initial.tasks.find((task) => task.id === affectedTaskId)!;
+    expect(before.status).toBe("needs-information");
+
+    const confirmed = buildRoadmap({
+      entry: { kind: "browse", outcomeId: "export-first-commercial-order" },
+      answers: { [question!.factKey]: true },
+    });
+    const afterYes = confirmed.tasks.find((task) => task.id === affectedTaskId)!;
+    expect(afterYes.status).not.toBe("needs-information");
+    expect(afterYes.missingAnswers).not.toContain(question!.factKey);
+    expect(confirmed.questions.some((candidate) => candidate.factKey === question!.factKey)).toBe(false);
+
+    const declined = buildRoadmap({
+      entry: { kind: "browse", outcomeId: "export-first-commercial-order" },
+      answers: { [question!.factKey]: false },
+    });
+    expect(declined.tasks.some((task) => task.id === affectedTaskId)).toBe(false);
+    expect(declined.excludedTasks).toContainEqual(expect.objectContaining({
+      id: affectedTaskId,
+      applicability: false,
+    }));
+    expect(declined.tasks.filter((task) => task.id !== affectedTaskId)).toEqual(
+      initial.tasks.filter((task) => task.id !== affectedTaskId),
+    );
+  });
+
+  it("keeps unknown safe effects and arbitrary manual-review answers fail-closed", () => {
+    const initial = buildRoadmap({
+      entry: { kind: "browse", outcomeId: "export-first-commercial-order" },
+    });
+    const safeQuestion = initial.questions.find((candidate) =>
+      candidate.id.endsWith(":q.rcmc-benefit"),
+    )!;
+    const manualQuestion = initial.questions.find((candidate) =>
+      candidate.resolutionMode === "manual-review" && candidate.blocksTaskIds.length > 0,
+    )!;
+
+    for (const answers of [
+      { [safeQuestion.factKey]: null },
+      { [manualQuestion.factKey]: manualQuestion.options[0] ?? "recorded detail" },
+    ]) {
+      const updated = buildRoadmap({
+        entry: { kind: "browse", outcomeId: "export-first-commercial-order" },
+        answers,
+      });
+      const factKey = Object.keys(answers)[0]!;
+      expect(updated.questions.some((question) => question.factKey === factKey)).toBe(true);
+      expect(updated.tasks.filter((task) =>
+        initial.questions.find((question) => question.factKey === factKey)?.blocksTaskIds.includes(task.id),
+      ).every((task) => task.actionability === "withheld" && task.missingAnswers.includes(factKey))).toBe(true);
+    }
+  });
 
   it("loads all seven independently reviewed final packs through KnowledgePackV1", () => {
     expect(researchAdmissionManifest).toMatchObject({

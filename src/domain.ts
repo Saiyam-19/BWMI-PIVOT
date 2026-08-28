@@ -164,6 +164,12 @@ export interface TaskDefinition {
   readonly blockers?: readonly string[];
 }
 
+export interface QuestionTaskEffect {
+  readonly taskId: string;
+  readonly when: boolean | string;
+  readonly effect: "resolve-gate" | "exclude";
+}
+
 export interface QuestionDefinition {
   readonly id: string;
   readonly factKey: string;
@@ -184,7 +190,9 @@ export interface QuestionDefinition {
    * `manual-review` means the authored answer can be recorded, but the pack does
    * not contain executable logic that can safely turn it into task applicability.
    */
-  readonly resolutionMode?: "known-value" | "manual-review";
+  readonly resolutionMode?: "known-value" | "safe-effects" | "manual-review";
+  /** Reviewed exact-value effects; free-text research logic is never executed. */
+  readonly taskEffects?: readonly QuestionTaskEffect[];
   readonly unsupportedReason?: string;
   readonly askWhen?: Rule;
 }

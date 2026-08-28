@@ -159,7 +159,7 @@ describe("RoadmapWorkspace", () => {
       expect.objectContaining({ body: JSON.stringify({ answers: { condition: "New" } }) }),
     ));
     expect(screen.getByRole("heading", { name: personalizedRoadmap.outcomeTitle })).toBeInTheDocument();
-    expect(screen.getByText("1 question remaining")).toBeInTheDocument();
+    expect(screen.getByText("1 question left to answer")).toBeInTheDocument();
   });
 
   it("persists an unsupported question as explicit unknown and terminates traversal across reload", async () => {
@@ -194,16 +194,63 @@ describe("RoadmapWorkspace", () => {
       "/api/roadmaps/rm-workspace/answers",
       expect.objectContaining({ body: JSON.stringify({ answers: { dossier: null } }) }),
     ));
-    expect(screen.getByText("0 questions remaining")).toBeInTheDocument();
+    expect(screen.getByText("0 questions left to answer")).toBeInTheDocument();
+    expect(screen.getByText("1 left unknown · 1 affected branch still needs information")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /Personalize this roadmap/i }));
-    expect(screen.getByText("No unanswered personalization questions")).toBeInTheDocument();
+    expect(screen.getByText("No new questions left to answer")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Review unknown: Do you have a verified product dossier/i }));
+    expect(screen.getByText(documentRoadmap.questions[0]!.prompt)).toBeInTheDocument();
     await user.keyboard("{Escape}");
     expect(screen.getByRole("heading", { name: documentRoadmap.outcomeTitle })).toBeInTheDocument();
 
     rendered.unmount();
     render(<RoadmapWorkspace initialRoadmap={persistedRoadmap} />);
-    expect(screen.getByText("0 questions remaining")).toBeInTheDocument();
+    expect(screen.getByText("0 questions left to answer")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Review unknown answers" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Review unknown answers" }));
+    expect(screen.getByText(documentRoadmap.questions[0]!.prompt)).toBeInTheDocument();
+  });
+
+  it("labels safely executable and manual-review questions without overstating either", async () => {
+    const questionsRoadmap = {
+      ...initialRoadmap,
+      status: "needs-information" as const,
+      questions: [{
+        id: "q-safe",
+        factKey: "safe",
+        prompt: "Does this exact conditional branch apply?",
+        reason: "This reviewed answer affects one branch.",
+        answerType: "boolean",
+        options: ["Yes", "No"],
+        resolutionMode: "safe-effects",
+        taskEffects: [
+          { taskId: "second", when: true, effect: "resolve-gate" },
+          { taskId: "second", when: false, effect: "exclude" },
+        ],
+        blocksTaskIds: ["second"],
+      }, {
+        id: "q-manual",
+        factKey: "manual",
+        prompt: "Describe the supporting context.",
+        reason: "A reviewer must assess this context.",
+        answerType: "text",
+        options: [],
+        resolutionMode: "manual-review",
+        blocksTaskIds: ["second"],
+      }],
+    } as unknown as Roadmap;
+    const user = userEvent.setup();
+    const rendered = render(<RoadmapWorkspace initialRoadmap={questionsRoadmap} />);
+
     await user.click(screen.getByRole("button", { name: /Personalize this roadmap/i }));
-    expect(screen.queryByText(documentRoadmap.questions[0]!.prompt)).not.toBeInTheDocument();
+    expect(screen.getByText("Can safely personalize branches")).toBeInTheDocument();
+    rendered.unmount();
+
+    render(<RoadmapWorkspace initialRoadmap={{
+      ...questionsRoadmap,
+      questions: questionsRoadmap.questions.slice(1),
+    }} />);
+    await user.click(screen.getByRole("button", { name: /Personalize this roadmap/i }));
+    expect(screen.getByText("Informational — manual review required")).toBeInTheDocument();
   });
 });

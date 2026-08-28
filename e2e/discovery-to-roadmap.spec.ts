@@ -21,7 +21,8 @@ test("natural-language import reaches a fail-closed roadmap", async ({ page }) =
   await page.getByRole("combobox", { name: /Is the shipment new finished goods/i }).click();
   await page.getByRole("option", { name: "New finished goods" }).click();
   await page.getByRole("button", { name: "Save answer" }).click();
-  await expect(page.locator("#top").getByText("11 questions remaining")).toBeVisible();
+  await expect(page.locator("#top").getByText("10 questions left to answer")).toBeVisible();
+  await expect(page.locator("#top").getByText(/1 left unknown/)).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: outcomes[0][1] })).toBeVisible();
   await page.getByRole("tab", { name: "Accessible list" }).click();
   await expect(page.getByText("Instructions withheld").first()).toBeVisible();
