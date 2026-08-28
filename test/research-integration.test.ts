@@ -66,9 +66,45 @@ describe("published research admission", () => {
     });
     expect(sector).toMatchObject({ answerType: "multi_select" });
     expect(pack?.questions.every((question) =>
+      question.resolutionMode === "manual-review",
+    )).toBe(true);
+    expect(pack?.questions.every((question) =>
       !question.prompt.startsWith("Does this research trigger apply"),
     )).toBe(true);
   });
+
+  it.each([
+    ["import-regulated-product", "q.condition", "Waste or scrap"],
+    ["import-regulated-product", "q.battery-waste-packaging", ["Unknown"]],
+    ["export-first-commercial-order", "q.rcmc-benefit", false],
+  ] as const)(
+    "keeps adverse authored answers fail-closed for %s %s",
+    (outcomeId, questionSuffix, answer) => {
+      const initial = buildRoadmap({ entry: { kind: "browse", outcomeId } });
+      const question = initial.questions.find((candidate) =>
+        candidate.id.endsWith(`:${questionSuffix}`),
+      );
+      expect(question).toBeDefined();
+
+      const updated = buildRoadmap({
+        entry: { kind: "browse", outcomeId },
+        answers: { [question!.factKey]: answer },
+      });
+      const affectedTasks = updated.tasks.filter((task) =>
+        question!.blocksTaskIds.includes(task.id),
+      );
+
+      expect(affectedTasks.length).toBeGreaterThan(0);
+      expect(affectedTasks.every((task) =>
+        task.actionability === "withheld" &&
+        task.missingAnswers.includes(question!.factKey) &&
+        (task.journey?.instructions.length ?? 0) === 0,
+      )).toBe(true);
+      expect(updated.questions.some((candidate) =>
+        candidate.factKey === question!.factKey,
+      )).toBe(true);
+    },
+  );
 
   it("loads all seven independently reviewed final packs through KnowledgePackV1", () => {
     expect(researchAdmissionManifest).toMatchObject({

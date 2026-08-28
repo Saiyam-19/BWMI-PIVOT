@@ -159,13 +159,18 @@ export function RoadmapPersonalization({
   onRoadmapUpdated,
 }: RoadmapPersonalizationProps) {
   const [open, setOpen] = useState(false);
-  const [skippedFactKeys, setSkippedFactKeys] = useState<ReadonlySet<string>>(new Set());
   const [value, setValue] = useState<AnswerValue>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
+  const pendingQuestions = useMemo(
+    () => roadmap.questions.filter(
+      (candidate) => !Object.prototype.hasOwnProperty.call(roadmap.answers, candidate.factKey),
+    ),
+    [roadmap.answers, roadmap.questions],
+  );
   const question = useMemo(
-    () => roadmap.questions.find((candidate) => !skippedFactKeys.has(candidate.factKey)) ?? roadmap.questions[0],
-    [roadmap.questions, skippedFactKeys],
+    () => pendingQuestions[0],
+    [pendingQuestions],
   );
 
   useEffect(() => {
@@ -173,11 +178,25 @@ export function RoadmapPersonalization({
     setError(undefined);
   }, [question?.factKey]);
 
-  const leaveUnknown = () => {
-    if (question) {
-      setSkippedFactKeys((current) => new Set(current).add(question.factKey));
+  const leaveUnknown = async () => {
+    if (!question) return;
+    setBusy(true);
+    setError(undefined);
+    try {
+      const updated = await updateRoadmapAnswers(roadmap.id, {
+        [question.factKey]: null,
+      });
+      onRoadmapUpdated(updated);
+      setOpen(false);
+    } catch (caught) {
+      setError(
+        caught instanceof ClientApiError
+          ? caught.message
+          : "This question could not be left unknown. The visible roadmap has not been replaced.",
+      );
+    } finally {
+      setBusy(false);
     }
-    setOpen(false);
   };
 
   const saveAnswer = async () => {
@@ -201,7 +220,7 @@ export function RoadmapPersonalization({
     }
   };
 
-  const countLabel = `${roadmap.questions.length} ${roadmap.questions.length === 1 ? "question" : "questions"} remaining`;
+  const countLabel = `${pendingQuestions.length} ${pendingQuestions.length === 1 ? "question" : "questions"} remaining`;
 
   return (
     <>
@@ -257,7 +276,18 @@ export function RoadmapPersonalization({
                     </AlertDescription>
                   </Alert>
                 ) : (
-                  <QuestionControl question={question} value={value} onChange={setValue} />
+                  <>
+                    <QuestionControl question={question} value={value} onChange={setValue} />
+                    {question.resolutionMode === "manual-review" ? (
+                      <Alert className="border-blue-600 bg-blue-50 text-blue-950">
+                        <CircleHelp aria-hidden="true" />
+                        <AlertTitle>Saved for manual review</AlertTitle>
+                        <AlertDescription className="leading-6 text-blue-950">
+                          This answer can be recorded, but it will not automatically unlock, exclude, or reorder work because the source does not provide safe executable decision logic.
+                        </AlertDescription>
+                      </Alert>
+                    ) : null}
+                  </>
                 )}
 
                 {error ? (

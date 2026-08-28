@@ -101,6 +101,23 @@ describe("application and persistence seams", () => {
     ).rejects.toBeInstanceOf(PrivacyViolationError);
   });
 
+  it.each([
+    "data:text/plain;base64,c2Vuc2l0aXZl",
+    "-----BEGIN PRIVATE KEY-----secret-----END PRIVATE KEY-----",
+    "password=do-not-store",
+    "document payload: identity proof contents",
+  ])("rejects unsafe content inside string-array answers: %s", async (unsafeValue) => {
+    const application = createNavigatorApplication({
+      registry,
+      repository: new InMemoryRoadmapRepository(),
+    });
+
+    await expect(application.start({
+      entry: { kind: "browse", outcomeId: "test-outcome" },
+      answers: { notes: [unsafeValue] },
+    })).rejects.toBeInstanceOf(PrivacyViolationError);
+  });
+
   it("accepts an authored typed answer through its approved question fact key", async () => {
     const application = createNavigatorApplication({
       repository: new InMemoryRoadmapRepository(),

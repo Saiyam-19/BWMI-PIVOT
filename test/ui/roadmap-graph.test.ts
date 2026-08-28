@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Roadmap, RoadmapTask, TaskProgressStatus } from "../../src/domain.js";
-import {
-  projectRoadmapGraph,
-  selectInitialViewNodeIds,
-  type RoadmapGraphModel,
-} from "../../src/lib/roadmap-graph.js";
-import { layoutRoadmapGraph } from "../../src/lib/roadmap-layout.js";
+import { projectRoadmapGraph } from "../../src/lib/roadmap-graph.js";
 
 const statuses: readonly TaskProgressStatus[] = [
   "needs-information",
@@ -145,46 +140,5 @@ describe("projectRoadmapGraph", () => {
       actionability: "withheld",
     });
     expect(model.excludedCount).toBe(1);
-  });
-});
-
-describe("layoutRoadmapGraph", () => {
-  it("lays dependencies from top to bottom without mutating the projected model", () => {
-    const projected = projectRoadmapGraph(roadmap([
-      task("root-a", "completed"),
-      task("root-b", "ready"),
-      task("middle", "ready", ["root-a"]),
-      task("finish", "blocked", ["middle", "root-b"]),
-    ]));
-
-    const laidOut = layoutRoadmapGraph(projected);
-    const byId = new Map(laidOut.nodes.map((node) => [node.id, node.position]));
-
-    expect(projected.nodes.every((node) => node.position.x === 0 && node.position.y === 0)).toBe(true);
-    expect(byId.get("outcome:rm-graph")!.y).toBeLessThan(byId.get("root-a")!.y);
-    expect(byId.get("root-a")!.y).toBeLessThan(byId.get("middle")!.y);
-    expect(byId.get("middle")!.y).toBeLessThan(byId.get("finish")!.y);
-    expect(new Set(laidOut.nodes.map((node) => `${node.position.x}:${node.position.y}`)).size)
-      .toBe(laidOut.nodes.length);
-  });
-});
-
-describe("selectInitialViewNodeIds", () => {
-  it("frames the outcome with the nearest first-rank branch instead of a distant alphabetical root", () => {
-    const model: RoadmapGraphModel = {
-      excludedCount: 0,
-      edges: [
-        { id: "outcome->far", source: "outcome", target: "far", kind: "outcome" },
-        { id: "outcome->near", source: "outcome", target: "near", kind: "outcome" },
-      ],
-      nodes: [
-        { id: "outcome", kind: "outcome", title: "Outcome", position: { x: 1000, y: 0 }, width: 280, height: 64 },
-        { id: "far", kind: "task", title: "Far root", position: { x: 0, y: 200 }, width: 248, height: 76 },
-        { id: "near", kind: "task", title: "Near root", position: { x: 1040, y: 200 }, width: 248, height: 76 },
-        { id: "later", kind: "task", title: "Later task", position: { x: 1000, y: 500 }, width: 248, height: 76 },
-      ],
-    };
-
-    expect(selectInitialViewNodeIds(model)).toEqual(["outcome", "near"]);
   });
 });

@@ -42,6 +42,17 @@ export class RoadmapNotFoundError extends Error {
 const forbiddenFactKey =
   /(password|passcode|secret|token|credential|document|upload|attachment|filecontents)/i;
 
+const forbiddenFactValue =
+  /-----BEGIN (?:[A-Z0-9]+ )*PRIVATE KEY-----|^data:|(?:password|passcode|secret|token|credential)\s*[:=]|(?:document|attachment|file)\s*(?:content|payload)\s*[:=]/i;
+
+function assertPrivacySafeString(key: string, value: string): void {
+  if (forbiddenFactValue.test(value)) {
+    throw new PrivacyViolationError(
+      `Credential, document and file contents are not accepted as roadmap facts: ${key}.`,
+    );
+  }
+}
+
 function assertPrivacySafeAnswers(
   answers: Answers | undefined,
   approvedFactKeys: ReadonlySet<string> = new Set(),
@@ -69,13 +80,9 @@ function assertPrivacySafeAnswers(
         `Roadmap facts must be privacy-safe primitive values or bounded option lists: ${key}.`,
       );
     }
-    if (
-      typeof value === "string" &&
-      (/-----BEGIN [A-Z ]+PRIVATE KEY-----/.test(value) || value.startsWith("data:"))
-    ) {
-      throw new PrivacyViolationError(
-        `Credential and file contents are not accepted as roadmap facts: ${key}.`,
-      );
+    if (typeof value === "string") assertPrivacySafeString(key, value);
+    if (Array.isArray(value)) {
+      value.forEach((item) => assertPrivacySafeString(key, item));
     }
   }
 }

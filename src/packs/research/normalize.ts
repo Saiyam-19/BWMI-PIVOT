@@ -639,6 +639,7 @@ export function normalizeResearchPack(
       reason: question.why_it_matters,
       answerType,
       options: question.options,
+      resolutionMode: "manual-review",
       ...(answerType === "document"
         ? {
             unsupportedReason:

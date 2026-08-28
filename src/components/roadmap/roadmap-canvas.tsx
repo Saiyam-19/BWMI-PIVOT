@@ -1,9 +1,25 @@
 "use client";
 
-import { ArrowDown, CircleAlert, LockKeyhole } from "lucide-react";
+import {
+  ArrowDown,
+  Check,
+  CircleAlert,
+  CircleDashed,
+  Clock3,
+  CornerDownRight,
+  FileQuestion,
+  Flag,
+  LoaderCircle,
+  LockKeyhole,
+  type LucideIcon,
+} from "lucide-react";
 import { useMemo } from "react";
 
-import { ROADMAP_STATUS_LABELS } from "@/components/roadmap/roadmap-node";
+import {
+  ROADMAP_STATUS_CLASSES,
+  ROADMAP_STATUS_LABELS,
+  type RoadmapNodeStatus,
+} from "@/components/roadmap/roadmap-status";
 import type { RoadmapGraphModel, RoadmapGraphNode } from "@/lib/roadmap-graph";
 import { cn } from "@/lib/utils";
 
@@ -51,42 +67,73 @@ function roadmapStages(model: RoadmapGraphModel): RoadmapGraphNode[][] {
 
 function TaskTile({
   node,
+  dependencies,
   selected,
   onSelect,
 }: {
   node: RoadmapGraphNode;
+  dependencies: readonly RoadmapGraphNode[];
   selected: boolean;
   onSelect: () => void;
 }) {
   const locked = node.actionability === "withheld";
+  const status = node.status ?? "not-started";
+  const StatusIcon = statusIcons[status];
+  const dependencyLabel = dependencies.length > 0
+    ? `After ${dependencies.map((dependency) => dependency.title).join("; ")}`
+    : "Starts from selected outcome";
 
   return (
     <button
       type="button"
       onClick={onSelect}
+      data-task-id={node.id}
+      data-depends-on={dependencies.map((dependency) => dependency.id).join(" ")}
+      data-status={status}
+      data-state-tone={status}
       className={cn(
-        "group relative w-full rounded-sm border-2 border-slate-950 bg-[#fff7dc] px-3 py-2 text-left shadow-[3px_3px_0_#0f172a] transition",
-        "hover:-translate-y-0.5 hover:bg-[#fff1bd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2",
+        "group relative w-full rounded-sm border-2 border-l-[6px] border-slate-950 px-3 py-2 text-left shadow-[3px_3px_0_#0f172a] transition",
+        "hover:-translate-y-0.5 hover:brightness-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2",
+        ROADMAP_STATUS_CLASSES[status],
         selected && "bg-[#ffe69a] ring-2 ring-blue-700 ring-offset-2",
       )}
       aria-pressed={selected}
+      aria-label={`${node.title}. ${ROADMAP_STATUS_LABELS[status]}. ${dependencyLabel}${locked ? ". Instructions withheld" : ""}`}
     >
       <span className="block text-sm font-bold leading-snug text-slate-950">{node.title}</span>
-      <span className="mt-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-600">
+      <span className="mt-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.08em]">
+        <StatusIcon className={cn("size-3", status === "in-progress" && "animate-spin")} aria-hidden="true" />
         {locked ? <LockKeyhole className="size-3" aria-hidden="true" /> : null}
-        {node.status ? ROADMAP_STATUS_LABELS[node.status] : "Open task"}
+        {ROADMAP_STATUS_LABELS[status]}
+      </span>
+      <span className="mt-2 flex items-start gap-1.5 text-[11px] leading-4 text-slate-700">
+        <CornerDownRight className="mt-0.5 size-3 shrink-0 text-blue-700" aria-hidden="true" />
+        <span>{dependencyLabel}</span>
       </span>
     </button>
   );
 }
 
+const statusIcons: Readonly<Record<RoadmapNodeStatus, LucideIcon>> = {
+  "needs-information": FileQuestion,
+  "not-started": CircleDashed,
+  ready: Flag,
+  blocked: LockKeyhole,
+  "in-progress": LoaderCircle,
+  "awaiting-authority": Clock3,
+  completed: Check,
+  "not-applicable": CircleAlert,
+};
+
 function TaskBranch({
   nodes,
+  dependenciesByTaskId,
   side,
   selectedTaskId,
   onSelectTask,
 }: {
   nodes: RoadmapGraphNode[];
+  dependenciesByTaskId: ReadonlyMap<string, readonly RoadmapGraphNode[]>;
   side: "left" | "right";
   selectedTaskId: string | null;
   onSelectTask: (taskId: string) => void;
@@ -109,6 +156,7 @@ function TaskBranch({
         <TaskTile
           key={node.id}
           node={node}
+          dependencies={dependenciesByTaskId.get(node.id) ?? []}
           selected={selectedTaskId === node.id}
           onSelect={() => onSelectTask(node.id)}
         />
@@ -119,6 +167,18 @@ function TaskBranch({
 
 export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCanvasProps) {
   const stages = useMemo(() => roadmapStages(model), [model]);
+  const dependenciesByTaskId = useMemo(() => {
+    const tasksById = new Map(
+      model.nodes.filter((node) => node.kind === "task").map((node) => [node.id, node]),
+    );
+    const dependencies = new Map<string, RoadmapGraphNode[]>();
+    for (const edge of model.edges) {
+      const source = tasksById.get(edge.source);
+      if (!source || !tasksById.has(edge.target)) continue;
+      dependencies.set(edge.target, [...(dependencies.get(edge.target) ?? []), source]);
+    }
+    return dependencies;
+  }, [model]);
   const outcome = model.nodes.find((node) => node.kind === "outcome");
   const state = model.nodes.find((node) => node.kind === "state");
   const excluded = model.nodes.filter((node) => node.kind === "excluded");
@@ -138,7 +198,7 @@ export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCa
               <span className="size-3 rounded-full bg-blue-700" aria-hidden="true" /> Main journey
             </span>
             <span className="inline-flex items-center gap-2">
-              <span className="h-px w-5 border-t-2 border-dotted border-slate-700" aria-hidden="true" /> Related task
+              <span className="h-px w-5 border-t-2 border-dotted border-slate-700" aria-hidden="true" /> Task branch
             </span>
           </div>
         </div>
@@ -168,6 +228,7 @@ export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCa
                     <div className={cn("md:col-start-1", side === "right" && "md:col-start-3")}>
                       <TaskBranch
                         nodes={nodes}
+                        dependenciesByTaskId={dependenciesByTaskId}
                         side={side}
                         selectedTaskId={selectedTaskId}
                         onSelectTask={onSelectTask}

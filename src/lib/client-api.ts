@@ -14,7 +14,7 @@ export interface OutcomeCatalog {
 
 export interface ClientRoadmapQuestion extends Pick<
   QuestionDefinition,
-  "id" | "factKey" | "prompt" | "reason" | "answerType" | "options" | "unsupportedReason"
+  "id" | "factKey" | "prompt" | "reason" | "answerType" | "options" | "resolutionMode" | "unsupportedReason"
 > {
   readonly blocksTaskIds: readonly string[];
 }

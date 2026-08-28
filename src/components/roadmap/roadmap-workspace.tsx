@@ -13,7 +13,6 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Roadmap } from "@/domain";
 import { projectRoadmapGraph } from "@/lib/roadmap-graph";
-import { layoutRoadmapGraph } from "@/lib/roadmap-layout";
 
 interface RoadmapWorkspaceProps {
   readonly initialRoadmap: Roadmap;
@@ -23,10 +22,7 @@ export function RoadmapWorkspace({ initialRoadmap }: RoadmapWorkspaceProps) {
   const [roadmap, setRoadmap] = useState(initialRoadmap);
   const [selectedTaskId, setSelectedTaskId] = useState<string>();
   const returnFocusRef = useRef<HTMLElement | null>(null);
-  const graph = useMemo(
-    () => layoutRoadmapGraph(projectRoadmapGraph(roadmap)),
-    [roadmap],
-  );
+  const graph = useMemo(() => projectRoadmapGraph(roadmap), [roadmap]);
   const completed = roadmap.tasks.filter((task) => task.status === "completed").length;
   const progress = roadmap.tasks.length === 0 ? 0 : (completed / roadmap.tasks.length) * 100;
   const selectedTask = roadmap.tasks.find((task) => task.id === selectedTaskId);

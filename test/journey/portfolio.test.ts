@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { buildRoadmap, builtInRegistry } from "../../src/index.js";
+import { buildRoadmap, builtInRegistry, type AnswerValue } from "../../src/index.js";
 
 // 05:00 in India on the release date, while UTC is still the previous day.
 const verificationDate = new Date("2026-08-27T23:30:00.000Z");
 const placeholderHost = /(^|\.)(example\.(com|org|net)|localhost|invalid)$/i;
 
-function answersFor(outcomeId: string): Readonly<Record<string, boolean>> {
+function answersFor(outcomeId: string): Readonly<Record<string, AnswerValue>> {
   const pack = builtInRegistry.getPackForOutcome(outcomeId);
   const outcome = builtInRegistry.getOutcome(outcomeId);
   if (!pack || !outcome) throw new Error(`Missing admitted outcome ${outcomeId}.`);
@@ -15,7 +15,20 @@ function answersFor(outcomeId: string): Readonly<Record<string, boolean>> {
     outcome.questionIds.map((questionId) => {
       const question = pack.questions.find((candidate) => candidate.id === questionId);
       if (!question) throw new Error(`Missing question ${questionId} for ${outcomeId}.`);
-      return [question.factKey, true];
+      const value: AnswerValue = (() => {
+        switch (question.answerType) {
+          case "boolean": return true;
+          case "single_select": return question.options[0] ?? null;
+          case "multi_select": return question.options[0] ? [question.options[0]] : null;
+          case "number": return 1;
+          case "date": return "2026-08-28";
+          case "identifier":
+          case "text": return "Known for manual review";
+          case "document":
+          case "unknown": return null;
+        }
+      })();
+      return [question.factKey, value];
     }),
   );
 }
@@ -64,7 +77,8 @@ describe("admitted outcome portfolio", () => {
     }
   });
 
-  it("gives every outcome at least one fully admitted actionable journey", () => {
+  it("does not turn prose-only authored answers into executable legal decisions", () => {
+    let admittedActionableTasks = 0;
     for (const outcome of builtInRegistry.listOutcomes()) {
       const roadmap = buildRoadmap(
         {
@@ -74,8 +88,19 @@ describe("admitted outcome portfolio", () => {
         { now: verificationDate },
       );
       const actionable = roadmap.tasks.filter((task) => task.actionability === "actionable");
+      admittedActionableTasks += actionable.length;
 
-      expect(actionable.length, outcome.id).toBeGreaterThan(0);
+      expect(roadmap.questions.every((question) => question.resolutionMode === "manual-review"), outcome.id).toBe(true);
+      for (const question of roadmap.questions) {
+        expect(question.blocksTaskIds.length, `${outcome.id}:${question.id}`).toBeGreaterThan(0);
+        for (const taskId of question.blocksTaskIds) {
+          const task = roadmap.tasks.find((candidate) => candidate.id === taskId);
+          expect(task?.missingAnswers, `${outcome.id}:${taskId}`).toContain(question.factKey);
+          expect(task?.actionability, `${outcome.id}:${taskId}`).toBe("withheld");
+          expect(task?.journey?.instructions ?? [], `${outcome.id}:${taskId}`).toEqual([]);
+        }
+      }
+
       for (const task of actionable) {
         expect(task.completionProof?.description, `${outcome.id}:${task.id}`).toBeTruthy();
         expect(task.journey, `${outcome.id}:${task.id}`).toBeDefined();
@@ -108,9 +133,10 @@ describe("admitted outcome portfolio", () => {
         ), `${outcome.id}:${task.id}`).toBe(true);
       }
     }
+    expect(admittedActionableTasks).toBeGreaterThan(0);
   });
 
-  it("changes at least one task graph while explicit unknowns remain blocked", () => {
+  it("keeps explicit unknowns and recorded manual-review values equally fail-closed", () => {
     for (const outcome of builtInRegistry.listOutcomes()) {
       const unknown = buildRoadmap(
         { entry: { kind: "browse", outcomeId: outcome.id } },
@@ -125,10 +151,6 @@ describe("admitted outcome portfolio", () => {
       );
 
       expect(
-        answered.tasks.some((task) => task.actionability === "actionable"),
-        outcome.id,
-      ).toBe(true);
-      expect(
         unknown.tasks.some((task) =>
           task.actionability === "withheld" &&
           (task.status === "needs-information" || task.status === "blocked"),
@@ -138,8 +160,11 @@ describe("admitted outcome portfolio", () => {
       expect(
         JSON.stringify(unknown.tasks.map(({ id, status, actionability }) => ({ id, status, actionability }))),
         outcome.id,
-      ).not.toBe(
+      ).toBe(
         JSON.stringify(answered.tasks.map(({ id, status, actionability }) => ({ id, status, actionability }))),
+      );
+      expect(answered.questions.map((question) => question.factKey)).toEqual(
+        unknown.questions.map((question) => question.factKey),
       );
     }
   });

@@ -38,7 +38,7 @@ The user can identify the expected completion proof, explicitly confirm receivin
 
 ## Chosen Direction
 
-Use the shipped Operate-mode composition: the navy government-service header leads into a concise white roadmap summary, truthful progress, and immediate canvas/linear tabs. The canvas is a tall centered document plane with a dominant vertical dependency spine, generous branches, compact black-outlined state nodes, blue connectors, a compact legend, and restrained pan/zoom controls. The grammar follows the pinned roadmap.sh Software Architect reference without adopting its brand, copy, community, account, or advertising patterns.
+Use the shipped Operate-mode composition: the navy government-service header leads into a concise white roadmap summary, truthful progress, and immediate roadmap/list tabs. The roadmap is a tall natural-height document plane with a dominant vertical dependency spine, generous branches, compact black-outlined status nodes, blue connectors, and a compact legend. Native browser scroll and zoom preserve the document reading model. The grammar follows the pinned roadmap.sh Software Architect reference without adopting its brand, copy, community, account, or advertising patterns.
 
 ## Memorable Interaction
 

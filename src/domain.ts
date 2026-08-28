@@ -180,6 +180,11 @@ export interface QuestionDefinition {
     | "document"
     | "unknown";
   readonly options: readonly string[];
+  /**
+   * `manual-review` means the authored answer can be recorded, but the pack does
+   * not contain executable logic that can safely turn it into task applicability.
+   */
+  readonly resolutionMode?: "known-value" | "manual-review";
   readonly unsupportedReason?: string;
   readonly askWhen?: Rule;
 }

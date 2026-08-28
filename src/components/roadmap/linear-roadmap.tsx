@@ -2,7 +2,7 @@
 
 import { ArrowDown, LockKeyhole } from "lucide-react";
 
-import { ROADMAP_STATUS_LABELS } from "@/components/roadmap/roadmap-node";
+import { ROADMAP_STATUS_LABELS } from "@/components/roadmap/roadmap-status";
 import type { RoadmapGraphModel } from "@/lib/roadmap-graph";
 import { cn } from "@/lib/utils";
 

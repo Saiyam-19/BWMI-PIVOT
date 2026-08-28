@@ -225,6 +225,27 @@ describe("navigator API routes", () => {
       error: { code: "privacy_violation" },
     });
 
+    for (const unsafeValue of [
+      "data:text/plain;base64,c2Vuc2l0aXZl",
+      "-----BEGIN PRIVATE KEY-----secret-----END PRIVATE KEY-----",
+      "credential: do-not-store",
+      "document content: identity proof",
+    ]) {
+      const arrayPrivacy = await createRoadmap(
+        jsonRequest("http://localhost/api/roadmaps", "POST", {
+          entry: { kind: "browse", outcomeId: "import-regulated-product" },
+          answers: { notes: [unsafeValue] },
+        }),
+      );
+      expect(arrayPrivacy.status).toBe(400);
+      await expect(arrayPrivacy.json()).resolves.toMatchObject({
+        error: {
+          code: "privacy_violation",
+          message: expect.stringMatching(/Credential|document|file contents/i),
+        },
+      });
+    }
+
     const missing = await getRoadmap(
       new Request("http://localhost/api/roadmaps/missing-roadmap"),
       roadmapContext("missing-roadmap"),

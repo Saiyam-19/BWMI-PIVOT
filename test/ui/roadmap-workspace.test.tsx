@@ -4,11 +4,8 @@ import "@testing-library/jest-dom/vitest";
 
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { ReactFlowProvider } from "@xyflow/react";
-import type { ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { RoadmapNode } from "../../src/components/roadmap/roadmap-node.js";
 import { RoadmapWorkspace } from "../../src/components/roadmap/roadmap-workspace.js";
 import type { Roadmap, RoadmapTask } from "../../src/domain.js";
 
@@ -115,27 +112,6 @@ describe("RoadmapWorkspace", () => {
     expect(taskButton).toHaveFocus();
   });
 
-  it("uses a native keyboard-activatable task control inside each graph node", async () => {
-    const user = userEvent.setup();
-    const onSelect = vi.fn();
-    const props = {
-      id: second.id,
-      data: { graphNode: { id: second.id, kind: "task", title: second.title, task: second }, onSelect },
-      selected: false,
-    } as unknown as ComponentProps<typeof RoadmapNode>;
-    render(
-      <ReactFlowProvider>
-        <RoadmapNode {...props} />
-      </ReactFlowProvider>,
-    );
-
-    const button = screen.getByRole("button", { name: /Submit application/ });
-    button.focus();
-    await user.keyboard("{Enter}");
-
-    expect(onSelect).toHaveBeenCalledWith("second");
-  });
-
   it("saves one typed answer without requiring the rest and keeps the roadmap visible", async () => {
     const personalizedRoadmap = {
       ...initialRoadmap,
@@ -186,7 +162,7 @@ describe("RoadmapWorkspace", () => {
     expect(screen.getByText("1 question remaining")).toBeInTheDocument();
   });
 
-  it("can skip an unsupported document question without a save or hiding the roadmap", async () => {
+  it("persists an unsupported question as explicit unknown and terminates traversal across reload", async () => {
     const documentRoadmap = {
       ...initialRoadmap,
       status: "needs-information" as const,
@@ -200,15 +176,34 @@ describe("RoadmapWorkspace", () => {
         blocksTaskIds: ["second"],
       }],
     } as unknown as Roadmap;
-    vi.stubGlobal("fetch", vi.fn());
+    const persistedRoadmap = {
+      ...documentRoadmap,
+      answers: { dossier: null },
+    } as Roadmap;
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      data: persistedRoadmap,
+    }), { status: 200, headers: { "content-type": "application/json" } })));
     const user = userEvent.setup();
 
-    render(<RoadmapWorkspace initialRoadmap={documentRoadmap} />);
+    const rendered = render(<RoadmapWorkspace initialRoadmap={documentRoadmap} />);
     await user.click(screen.getByRole("button", { name: /Personalize this roadmap/i }));
     expect(screen.getByText(/does not collect or upload documents/i)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /Leave unknown/i }));
 
-    expect(fetch).not.toHaveBeenCalled();
+    await waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalledWith(
+      "/api/roadmaps/rm-workspace/answers",
+      expect.objectContaining({ body: JSON.stringify({ answers: { dossier: null } }) }),
+    ));
+    expect(screen.getByText("0 questions remaining")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Personalize this roadmap/i }));
+    expect(screen.getByText("No unanswered personalization questions")).toBeInTheDocument();
+    await user.keyboard("{Escape}");
     expect(screen.getByRole("heading", { name: documentRoadmap.outcomeTitle })).toBeInTheDocument();
+
+    rendered.unmount();
+    render(<RoadmapWorkspace initialRoadmap={persistedRoadmap} />);
+    expect(screen.getByText("0 questions remaining")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Personalize this roadmap/i }));
+    expect(screen.queryByText(documentRoadmap.questions[0]!.prompt)).not.toBeInTheDocument();
   });
 });

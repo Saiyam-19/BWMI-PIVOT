@@ -1,22 +1,44 @@
 import { expect, test } from "@playwright/test";
 
 import {
-  answerEveryQuestion,
   createRoadmap,
   createRoadmapWithReadyTask,
 } from "./helpers.js";
 
-test("answers change the graph while explicit unknowns stay blocked", async ({ page, request }) => {
+test("adverse and explicit-unknown authored answers remain fail-closed", async ({ page, request }) => {
   const unknown = await createRoadmap(request, "import-regulated-product");
   const before = unknown.tasks.map(({ id, status, actionability }) => ({ id, status, actionability }));
-  const answered = await answerEveryQuestion(request, unknown);
-  const after = answered.tasks.map(({ id, status, actionability }) => ({ id, status, actionability }));
+  const conditionQuestion = unknown.questions.find((question) =>
+    question.options.includes("Waste or scrap")
+  );
+  expect(conditionQuestion).toBeDefined();
 
-  expect(after).not.toEqual(before);
-  expect(answered.tasks.some((task) => task.actionability === "actionable")).toBe(true);
-  expect(unknown.tasks.some((task) => task.status === "needs-information")).toBe(true);
+  const adverseResponse = await request.patch(`/api/roadmaps/${unknown.id}/answers`, {
+    data: { answers: { [conditionQuestion!.factKey]: "Waste or scrap" } },
+  });
+  expect(adverseResponse.ok()).toBe(true);
+  const adverse = (await adverseResponse.json() as { data: typeof unknown }).data;
+  const afterAdverse = adverse.tasks.map(({ id, status, actionability }) => ({ id, status, actionability }));
+
+  expect(adverse.answers[conditionQuestion!.factKey]).toBe("Waste or scrap");
+  expect(afterAdverse).toEqual(before);
+  expect(adverse.questions.some((question) => question.factKey === conditionQuestion!.factKey)).toBe(true);
+  expect(conditionQuestion!.blocksTaskIds.every((taskId) => {
+    const task = adverse.tasks.find((candidate) => candidate.id === taskId);
+    return task?.actionability === "withheld" && task.missingAnswers.includes(conditionQuestion!.factKey);
+  })).toBe(true);
+
+  const unknownResponse = await request.patch(`/api/roadmaps/${unknown.id}/answers`, {
+    data: { answers: { [conditionQuestion!.factKey]: null } },
+  });
+  expect(unknownResponse.ok()).toBe(true);
+  const explicitlyUnknown = (await unknownResponse.json() as { data: typeof unknown }).data;
+  expect(Object.prototype.hasOwnProperty.call(explicitlyUnknown.answers, conditionQuestion!.factKey)).toBe(true);
+  expect(explicitlyUnknown.answers[conditionQuestion!.factKey]).toBeNull();
+  expect(explicitlyUnknown.tasks.map(({ id, status, actionability }) => ({ id, status, actionability }))).toEqual(before);
 
   await page.goto(`/roadmaps/${unknown.id}`);
+  await expect(page.getByText(`${unknown.questions.length - 1} questions remaining`)).toBeVisible();
   await page.getByRole("tab", { name: "Accessible list" }).click();
   const withheld = page.getByText("Instructions withheld").first();
   await expect(withheld).toBeVisible();

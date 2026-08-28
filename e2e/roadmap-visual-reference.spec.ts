@@ -9,6 +9,22 @@ test("roadmap matches the authored long-scroll grammar on desktop and mobile", a
   await page.goto(`/roadmaps/${roadmap.id}`);
   await expect(page.getByRole("tab", { name: "Roadmap view" })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByLabel("Interactive roadmap")).toBeVisible();
+  const dependentTask = roadmap.tasks.find((task) => task.dependencies.length > 0);
+  expect(dependentTask).toBeDefined();
+  const predecessor = roadmap.tasks.find((task) => task.id === dependentTask!.dependencies[0]);
+  expect(predecessor).toBeDefined();
+  const dependentTile = page.locator(`[data-task-id="${dependentTask!.id}"]`);
+  await expect(dependentTile).toHaveAttribute("data-depends-on", new RegExp(predecessor!.id));
+  await expect(dependentTile).toContainText(`After ${predecessor!.title}`);
+  const stateTreatments = await page.locator("[data-task-id]").evaluateAll((tiles) =>
+    tiles.map((tile) => ({
+      status: (tile as HTMLElement).dataset.status,
+      tone: (tile as HTMLElement).dataset.stateTone,
+      background: getComputedStyle(tile).backgroundColor,
+    })),
+  );
+  expect(new Set(stateTreatments.map(({ tone }) => tone)).size).toBeGreaterThan(1);
+  expect(new Set(stateTreatments.map(({ background }) => background)).size).toBeGreaterThan(1);
   await page.screenshot({ path: "artifacts/qa/roadmap-desktop.png" });
   await page.screenshot({ path: "artifacts/qa/roadmap-desktop-full.png", fullPage: true });
 

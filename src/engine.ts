@@ -158,6 +158,16 @@ function safeJourney(
   };
 }
 
+function answerResolvesQuestion(
+  pack: KnowledgePackV1,
+  factKey: string,
+  answers: Answers,
+): boolean {
+  const question = pack.questions.find((candidate) => candidate.factKey === factKey);
+  if (question?.resolutionMode === "manual-review") return false;
+  return answers[factKey] !== undefined && answers[factKey] !== null;
+}
+
 function materializeTask(
   task: TaskDefinition,
   pack: KnowledgePackV1,
@@ -187,7 +197,7 @@ function materializeTask(
       : [];
   });
   const requiredAnswerGaps = (task.requiredAnswers ?? []).filter(
-    (field) => answers[field] === undefined || answers[field] === null,
+    (field) => !answerResolvesQuestion(pack, field, answers),
   );
   const claimApplicabilityGaps = evidence.flatMap((claim) =>
     claim.applicability === "unknown" && claim.appliesWhen
@@ -254,7 +264,11 @@ function materializeTask(
     reason: task.reason,
     authority: task.authority,
     classification:
-      applicability === "unknown" ? "needs-information" : task.classification,
+      task.classification === "outside-scope"
+        ? "outside-scope"
+        : applicability === "unknown"
+          ? "needs-information"
+          : task.classification,
     applicability,
     status:
       applicability === "unknown"
@@ -321,7 +335,11 @@ function questionsForRoadmap(
   return outcome.questionIds.flatMap((questionId) => {
     const question = pack.questions.find((candidate) => candidate.id === questionId);
     if (!question) return [];
-    if (answers[question.factKey] !== undefined && answers[question.factKey] !== null) {
+    if (
+      question.resolutionMode !== "manual-review" &&
+      answers[question.factKey] !== undefined &&
+      answers[question.factKey] !== null
+    ) {
       return [];
     }
     if (question.askWhen && evaluateRule(question.askWhen, answers).result !== true) {

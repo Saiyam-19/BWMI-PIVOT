@@ -188,7 +188,7 @@ The palette combines civic navy and service blue with paper-like neutrals; state
 
 The durable shell uses centered, responsive page containers with 1rem mobile gutters, 1.5rem small-screen gutters, and 2rem large-screen gutters. White documents sit on page slate, and content moves from stacked mobile flow to measured columns only when the secondary column has a clear operational role. Body copy stays narrow enough to scan even when the enclosing workspace is wide.
 
-Generated roadmap pages may expand to a 96rem working width and use a tall viewport-relative canvas with a minimum usable height. Their dependency graph centers a dominant vertical spine, gives lateral branches generous separation, and preserves the full graph rather than cropping consequences. On small screens the canvas remains navigable, the legend can scroll, the task sheet becomes full-width, and the linear view provides the complete non-drag alternative.
+Generated roadmap pages may expand to a 96rem working width and use a natural-height authored document. Their dependency graph centers a dominant vertical spine, gives lateral branches generous separation, names each task's actual predecessor relationship, and preserves the full graph through native browser scrolling and zoom. On small screens the spine shifts left into a single readable column, the task sheet becomes full-width, and the linear view provides the complete accessibility alternative without horizontal document overflow.
 
 **The Shell and Workspace Rule.** Global surfaces remain calm government documents; only generated roadmap and journey workspaces use the dense node-and-connector composition.
 
@@ -196,12 +196,11 @@ Generated roadmap pages may expand to a 96rem working width and use a tall viewp
 
 ## Elevation & Depth
 
-The system is flat and document-led by default. Borders and tonal changes establish structure; restrained cool shadows lift only major documents, floating canvas tools, hovered roadmap nodes, and modal sheets. There are no decorative glows, glass layers, or stacked-card theatrics.
+The system is flat and document-led by default. Borders and tonal changes establish structure; restrained cool shadows lift only major documents, hovered roadmap nodes, and modal sheets. There are no decorative glows, glass layers, or stacked-card theatrics.
 
 ### Shadow Vocabulary
 
 - **Document Lift** (`0 10px 28px rgba(15, 23, 42, 0.06)`): A quiet separation for the roadmap summary document.
-- **Floating Tool Lift** (`0 8px 24px rgba(15, 23, 42, 0.08)`): Canvas legend and controls over the working plane.
 - **Node Hover Lift** (`0 5px 12px rgba(15, 23, 42, 0.16)`): Short-lived confirmation that a roadmap task is interactive.
 
 ### Named Rules
@@ -221,7 +220,7 @@ Standard shadcn controls use gently curved corners from the extracted radius sca
 - **Shape:** Gently curved, restrained controls (`rounded.md`), with a 44px touch height for important actions.
 - **Primary:** Document ink on white text (`components.button-primary`); use for the exact safe next action, official-service launch, or proof-confirmed transition.
 - **Hover / Focus:** Dark actions shift only to Document Ink Hover; keyboard focus uses a visible service-blue ring rather than a decorative animation.
-- **Secondary / Outline:** White with a slate border and document ink (`components.button-outline`); use for reversible progress transitions and canvas controls.
+- **Secondary / Outline:** White with a slate border and document ink (`components.button-outline`); use for reversible progress transitions and roadmap view controls.
 
 ### Chips
 

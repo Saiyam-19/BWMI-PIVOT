@@ -116,12 +116,10 @@
     },
     "shadows": [
       { "name": "document-lift", "value": "0 10px 28px rgba(15, 23, 42, 0.06)", "purpose": "Quiet separation for the roadmap summary document." },
-      { "name": "floating-tool-lift", "value": "0 8px 24px rgba(15, 23, 42, 0.08)", "purpose": "Canvas legend and controls over the working plane." },
       { "name": "node-hover-lift", "value": "0 5px 12px rgba(15, 23, 42, 0.16)", "purpose": "Interactive feedback for a selectable roadmap task." }
     ],
     "motion": [
       { "name": "node-state", "value": "150ms ease", "purpose": "Short transform and shadow response on roadmap task hover." },
-      { "name": "canvas-refocus", "value": "280ms ease", "purpose": "Bounded viewport reset for the central dependency spine." },
       { "name": "sheet-enter", "value": "500ms ease-in-out", "purpose": "Right-side journey sheet entrance." },
       { "name": "sheet-exit", "value": "300ms ease-in-out", "purpose": "Right-side journey sheet exit." },
       { "name": "reduced-motion", "value": "0.01ms", "purpose": "Global animation and transition duration under prefers-reduced-motion." }
@@ -152,8 +150,8 @@
       "name": "Outline Button",
       "kind": "button",
       "refersTo": "button-outline",
-      "description": "Restrained reversible action for progress transitions and canvas controls.",
-      "html": "<button class=\"ds-btn-outline\" type=\"button\">Reset view</button>",
+      "description": "Restrained reversible action for progress transitions and roadmap view controls.",
+      "html": "<button class=\"ds-btn-outline\" type=\"button\">Accessible list</button>",
       "css": ".ds-btn-outline { min-height: 2.75rem; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .5rem 1rem; border: 1px solid #94a3b8; border-radius: .5rem; background: #fff; color: #172033; font: 500 .875rem/1 ui-sans-serif, system-ui, sans-serif; transition: background-color 150ms ease, border-color 150ms ease; } .ds-btn-outline:hover { background: #f8f9fb; border-color: #64748b; } .ds-btn-outline:focus-visible { outline: 3px solid rgba(36,84,166,.35); outline-offset: 2px; } .ds-btn-outline:active { background: #eef1f5; }"
     },
     {

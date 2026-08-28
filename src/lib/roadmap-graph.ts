@@ -6,24 +6,11 @@ import type {
   TaskProgressStatus,
 } from "../domain.js";
 
-export const ROADMAP_NODE_WIDTH = 248;
-export const ROADMAP_NODE_HEIGHT = 76;
-export const OUTCOME_NODE_WIDTH = 280;
-export const OUTCOME_NODE_HEIGHT = 64;
-
-export interface RoadmapGraphPosition {
-  readonly x: number;
-  readonly y: number;
-}
-
 export interface RoadmapGraphNode {
   readonly id: string;
   readonly kind: "outcome" | "task" | "state" | "excluded";
   readonly title: string;
   readonly summary?: string;
-  readonly position: RoadmapGraphPosition;
-  readonly width: number;
-  readonly height: number;
   readonly task?: RoadmapTask;
   readonly status?: TaskProgressStatus;
   readonly actionability?: RoadmapTask["actionability"];
@@ -42,27 +29,6 @@ export interface RoadmapGraphModel {
   readonly nodes: readonly RoadmapGraphNode[];
   readonly edges: readonly RoadmapGraphEdge[];
   readonly excludedCount: number;
-}
-
-export function selectInitialViewNodeIds(model: RoadmapGraphModel): readonly string[] {
-  const anchor = model.nodes.find((node) => node.kind === "outcome") ?? model.nodes[0];
-  if (!anchor) return [];
-  const candidateIds = model.edges
-    .filter((edge) => edge.source === anchor.id)
-    .map((edge) => edge.target);
-  const candidates = candidateIds.flatMap((id) => {
-    const node = model.nodes.find((candidate) => candidate.id === id);
-    return node ? [node] : [];
-  });
-  if (candidates.length === 0) return [anchor.id];
-
-  const anchorCenter = anchor.position.x + anchor.width / 2;
-  const nearest = [...candidates].sort((a, b) => {
-    const aDistance = Math.abs(a.position.x + a.width / 2 - anchorCenter);
-    const bDistance = Math.abs(b.position.x + b.width / 2 - anchorCenter);
-    return aDistance - bDistance || a.id.localeCompare(b.id);
-  })[0]!;
-  return [anchor.id, nearest.id];
 }
 
 function sortTasksByDependencies(tasks: readonly RoadmapTask[]): readonly RoadmapTask[] {
@@ -110,9 +76,6 @@ function taskNode(task: RoadmapTask): RoadmapGraphNode {
     id: task.id,
     kind: "task",
     title: task.title,
-    position: { x: 0, y: 0 },
-    width: ROADMAP_NODE_WIDTH,
-    height: ROADMAP_NODE_HEIGHT,
     task,
     status: task.status,
     actionability: task.actionability,
@@ -134,9 +97,6 @@ export function projectRoadmapGraph(roadmap: Roadmap): RoadmapGraphModel {
     kind: "excluded",
     title: task.title,
     summary: task.reason,
-    position: { x: 0, y: 0 },
-    width: ROADMAP_NODE_WIDTH,
-    height: ROADMAP_NODE_HEIGHT,
     applicability: false,
     classification: "not-applicable",
     status: "not-applicable",
@@ -149,9 +109,6 @@ export function projectRoadmapGraph(roadmap: Roadmap): RoadmapGraphModel {
       kind: "outcome",
       title: roadmap.outcomeTitle,
       summary: "Your selected government outcome remains visible while the roadmap is personalized.",
-      position: { x: 0, y: 0 },
-      width: OUTCOME_NODE_WIDTH,
-      height: OUTCOME_NODE_HEIGHT,
     },
     ...tasks.map(taskNode),
     ...(tasks.length === 0
@@ -162,9 +119,6 @@ export function projectRoadmapGraph(roadmap: Roadmap): RoadmapGraphModel {
           summary: roadmap.excludedTasks.length > 0
             ? "Review or change your answers to restore an excluded branch."
             : "This outcome has no admitted tasks yet. Keep the roadmap and check back when verified guidance is available.",
-          position: { x: 0, y: 0 },
-          width: OUTCOME_NODE_WIDTH,
-          height: ROADMAP_NODE_HEIGHT,
         }]
       : []),
     ...excludedNodes,
