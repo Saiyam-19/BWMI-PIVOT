@@ -9,6 +9,7 @@ import {
 
 export interface RoadmapEdgeData extends Record<string, unknown> {
   readonly kind: "primary" | "conditional" | "outcome";
+  readonly emphasis?: boolean;
 }
 
 export type RoadmapFlowEdge = Edge<RoadmapEdgeData, "roadmap">;
@@ -33,14 +34,16 @@ export function RoadmapEdge({
     offset: 28,
   });
   const conditional = data?.kind === "conditional";
+  const emphasized = data?.emphasis === true;
 
   return (
     <BaseEdge
       path={path}
       style={{
         stroke: "#2f6fd2",
-        strokeWidth: conditional ? 2.5 : 3,
+        strokeWidth: emphasized ? 4 : conditional ? 1.75 : 2,
         strokeDasharray: conditional ? "4 7" : undefined,
+        opacity: emphasized ? 1 : 0.68,
       }}
     />
   );

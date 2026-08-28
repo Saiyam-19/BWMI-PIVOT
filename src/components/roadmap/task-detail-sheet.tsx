@@ -141,6 +141,8 @@ export function TaskDetailSheet({
   const canComplete = task.actionability === "actionable" &&
     ["ready", "in-progress", "awaiting-authority"].includes(task.status) &&
     Boolean(task.completionProof);
+  const classificationLabel = task.classification.replaceAll("-", " ");
+  const showClassification = classificationLabel !== statusLabels[task.status].toLowerCase();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -153,9 +155,11 @@ export function TaskDetailSheet({
             <Badge variant="outline" className="border-slate-400 bg-slate-50 text-slate-800">
               {statusLabels[task.status]}
             </Badge>
-            <Badge variant="outline" className="border-slate-300 text-slate-600">
-              {task.classification.replaceAll("-", " ")}
-            </Badge>
+            {showClassification ? (
+              <Badge variant="outline" className="border-slate-300 text-slate-600">
+                {classificationLabel}
+              </Badge>
+            ) : null}
           </div>
           <SheetTitle className="mt-2 text-2xl leading-tight tracking-[-0.03em] text-[#172033] sm:text-3xl">
             {task.title}

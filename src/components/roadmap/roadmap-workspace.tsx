@@ -44,7 +44,7 @@ export function RoadmapWorkspace({ initialRoadmap }: RoadmapWorkspaceProps) {
     <div id="top" className="min-h-screen bg-[#eef1f5] text-[#172033]">
       <SiteHeader />
       <main>
-        <div className="mx-auto w-full max-w-[96rem] px-4 pb-0 pt-5 sm:px-6 sm:pt-7 lg:px-8">
+        <div className="mx-auto w-full max-w-[96rem] px-4 pb-0 pt-4 sm:px-6 sm:pt-7 lg:px-8">
           <a
             href="/"
             className="inline-flex min-h-11 items-center gap-2 rounded-sm text-sm font-medium text-[#1d4f91] outline-none hover:underline focus-visible:ring-2 focus-visible:ring-[#2454a6]"
@@ -52,7 +52,7 @@ export function RoadmapWorkspace({ initialRoadmap }: RoadmapWorkspaceProps) {
             <ArrowLeft aria-hidden="true" className="size-4" />
             Back to outcomes
           </a>
-          <div className="mt-3 grid gap-5 border border-slate-300 bg-white px-5 py-5 shadow-[0_10px_28px_rgba(15,23,42,0.06)] sm:px-7 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
+          <div className="mt-2 grid gap-4 border border-slate-300 bg-white px-4 py-4 shadow-[0_10px_28px_rgba(15,23,42,0.06)] sm:mt-3 sm:gap-5 sm:px-7 sm:py-5 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="border-[#2454a6] bg-[#eaf2ff] text-[#173f7a]">
@@ -60,14 +60,14 @@ export function RoadmapWorkspace({ initialRoadmap }: RoadmapWorkspaceProps) {
                 </Badge>
                 <span className="text-sm text-slate-600">Private local roadmap</span>
               </div>
-              <h1 className="mt-3 max-w-4xl text-2xl font-bold leading-tight tracking-[-0.035em] text-[#101a2e] sm:text-4xl">
+              <h1 className="mt-2 max-w-4xl text-[1.35rem] font-bold leading-[1.16] tracking-[-0.035em] text-[#101a2e] sm:mt-3 sm:text-4xl sm:leading-tight">
                 {roadmap.outcomeTitle}
               </h1>
-              <p className="mt-3 max-w-[70ch] text-sm leading-6 text-slate-600 sm:text-base">
+              <p className="mt-2 max-w-[70ch] text-[0.8125rem] leading-5 text-slate-600 sm:mt-3 sm:text-base sm:leading-6">
                 Follow the dependency path, open a task for its verified portal or offline journey, and confirm the expected proof before completion.
               </p>
             </div>
-            <div className="border-t border-slate-200 pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+            <div className="border-t border-slate-200 pt-3 sm:pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
               <div className="flex items-center justify-between gap-4 text-sm">
                 <span className="font-semibold text-[#172033]">{completed} of {roadmap.tasks.length} tasks completed</span>
                 <span className="tabular-nums text-slate-500">{Math.round(progress)}%</span>
@@ -81,7 +81,7 @@ export function RoadmapWorkspace({ initialRoadmap }: RoadmapWorkspaceProps) {
           </div>
         </div>
 
-        <Tabs defaultValue="canvas" className="mx-auto mt-4 w-full max-w-[96rem] gap-0 sm:px-6 lg:px-8">
+        <Tabs defaultValue="canvas" className="mx-auto mt-3 w-full max-w-[96rem] gap-0 sm:mt-4 sm:px-6 lg:px-8">
           <div className="px-4 sm:px-0">
             <TabsList variant="line" aria-label="Roadmap views" className="h-11">
               <TabsTrigger value="canvas" className="min-h-11 px-4">
