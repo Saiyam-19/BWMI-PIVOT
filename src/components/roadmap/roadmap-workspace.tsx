@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { LinearRoadmap } from "@/components/roadmap/linear-roadmap";
 import { RoadmapCanvas } from "@/components/roadmap/roadmap-canvas";
+import { RoadmapPersonalization } from "@/components/roadmap/roadmap-personalization";
 import { TaskDetailSheet } from "@/components/roadmap/task-detail-sheet";
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +67,9 @@ export function RoadmapWorkspace({ initialRoadmap }: RoadmapWorkspaceProps) {
               <p className="mt-2 max-w-[70ch] text-[0.8125rem] leading-5 text-slate-600 sm:mt-3 sm:text-base sm:leading-6">
                 Follow the dependency path, open a task for its verified portal or offline journey, and confirm the expected proof before completion.
               </p>
+              <div className="mt-4">
+                <RoadmapPersonalization roadmap={roadmap} onRoadmapUpdated={setRoadmap} />
+              </div>
             </div>
             <div className="border-t border-slate-200 pt-3 sm:pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
               <div className="flex items-center justify-between gap-4 text-sm">
@@ -86,16 +90,16 @@ export function RoadmapWorkspace({ initialRoadmap }: RoadmapWorkspaceProps) {
             <TabsList variant="line" aria-label="Roadmap views" className="h-11">
               <TabsTrigger value="canvas" className="min-h-11 px-4">
                 <Map aria-hidden="true" />
-                Canvas view
+                Roadmap view
               </TabsTrigger>
               <TabsTrigger value="linear" className="min-h-11 px-4">
                 <Rows3 aria-hidden="true" />
-                Linear view
+                Accessible list
               </TabsTrigger>
             </TabsList>
           </div>
           <TabsContent value="canvas" className="mt-2">
-            <RoadmapCanvas model={graph} onSelectTask={selectTask} />
+            <RoadmapCanvas model={graph} selectedTaskId={selectedTaskId ?? null} onSelectTask={selectTask} />
           </TabsContent>
           <TabsContent value="linear" className="mt-2 border-y border-slate-300 bg-white sm:border">
             <LinearRoadmap model={graph} onSelectTask={selectTask} />

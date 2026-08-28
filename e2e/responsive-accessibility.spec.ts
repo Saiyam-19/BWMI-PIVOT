@@ -21,7 +21,7 @@ test("desktop supports keyboard-only linear navigation, sheet focus, and critica
   await page.goto(`/roadmaps/${roadmap.id}`);
   await expectNoHorizontalOverflow(page);
 
-  const linearTab = page.getByRole("tab", { name: "Linear view" });
+  const linearTab = page.getByRole("tab", { name: "Accessible list" });
   await linearTab.focus();
   await page.keyboard.press("Enter");
   await expect(linearTab).toHaveAttribute("aria-selected", "true");
@@ -45,7 +45,7 @@ test("mobile has no page overflow and keeps the task sheet usable", async ({ pag
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/roadmaps/${roadmap.id}`);
   await expectNoHorizontalOverflow(page);
-  await page.getByRole("tab", { name: "Linear view" }).click();
+  await page.getByRole("tab", { name: "Accessible list" }).click();
   await page.locator("ol > li button").first().click();
   const sheet = page.getByRole("dialog");
   await expect(sheet).toBeVisible();
@@ -58,7 +58,7 @@ test("reduced-motion preference suppresses interface animation", async ({ page, 
   const roadmap = await createRoadmap(request, "reusable-central-foundations");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(`/roadmaps/${roadmap.id}`);
-  await page.getByRole("tab", { name: "Linear view" }).click();
+  await page.getByRole("tab", { name: "Accessible list" }).click();
   await page.locator("ol > li button").first().click();
   const sheet = page.getByRole("dialog");
   const durations = await sheet.evaluate((element) => {

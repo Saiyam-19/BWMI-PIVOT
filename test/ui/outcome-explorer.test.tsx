@@ -86,7 +86,7 @@ describe("OutcomeExplorer", () => {
     expect(push).not.toHaveBeenCalled();
   });
 
-  it("creates a real roadmap from supported natural language and preserves unknown intake", async () => {
+  it("navigates to a real roadmap immediately even when personalization questions remain", async () => {
     const fetchMock = vi.mocked(fetch);
     fetchMock
       .mockResolvedValueOnce(response({ data: catalog }))
@@ -101,6 +101,8 @@ describe("OutcomeExplorer", () => {
             factKey: "productApplies",
             prompt: "Does this product trigger apply to your case?",
             reason: "This answer changes which import tasks can be safely shown.",
+            answerType: "boolean",
+            options: ["Yes", "No"],
             blocksTaskIds: ["task-product"],
           }],
         },
@@ -112,11 +114,8 @@ describe("OutcomeExplorer", () => {
     await user.type(input, "import bluetooth headphones to india");
     await user.click(screen.getByRole("button", { name: "Build my roadmap" }));
 
-    expect(await screen.findByRole("dialog")).toHaveTextContent("Does this product trigger apply");
-    await user.click(screen.getByRole("button", { name: "I don't know yet" }));
-    await user.click(screen.getByRole("button", { name: "Open my roadmap" }));
-
-    expect(push).toHaveBeenCalledWith("/roadmaps/rm-supported");
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/roadmaps/rm-supported"));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 

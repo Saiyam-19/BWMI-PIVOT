@@ -17,6 +17,7 @@ const answerValueSchema = z.union([
   z.string(),
   z.number(),
   z.boolean(),
+  z.array(z.string()),
   z.null(),
 ]);
 

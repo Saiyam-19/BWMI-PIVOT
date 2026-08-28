@@ -1,6 +1,7 @@
 import type {
   AnswerValue,
   EntryPoint,
+  QuestionDefinition,
   Roadmap,
   TaskTransition,
 } from "../domain.js";
@@ -11,11 +12,10 @@ export interface OutcomeCatalog {
   readonly domains: readonly string[];
 }
 
-export interface ClientRoadmapQuestion {
-  readonly id: string;
-  readonly factKey: string;
-  readonly prompt: string;
-  readonly reason: string;
+export interface ClientRoadmapQuestion extends Pick<
+  QuestionDefinition,
+  "id" | "factKey" | "prompt" | "reason" | "answerType" | "options" | "unsupportedReason"
+> {
   readonly blocksTaskIds: readonly string[];
 }
 
@@ -106,7 +106,7 @@ export async function createRoadmap(entry: EntryPoint): Promise<ClientRoadmap> {
 export async function updateRoadmapAnswers(
   roadmapId: string,
   answers: Readonly<Record<string, AnswerValue>>,
-): Promise<ClientRoadmap> {
+): Promise<Roadmap> {
   const response = await fetch(
     `/api/roadmaps/${encodeURIComponent(roadmapId)}/answers`,
     {
@@ -115,7 +115,7 @@ export async function updateRoadmapAnswers(
       body: JSON.stringify({ answers }),
     },
   );
-  return decodeEnvelope<ClientRoadmap>(response);
+  return decodeEnvelope<Roadmap>(response);
 }
 
 export async function transitionRoadmapTask(

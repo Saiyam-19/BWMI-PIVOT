@@ -33,6 +33,43 @@ function affirmativeAnswers(
 }
 
 describe("published research admission", () => {
+  it("preserves authored typed qualifying questions and options without synthetic trigger prompts", () => {
+    const pack = builtInRegistry.getPackForOutcome("import-regulated-product");
+    expect(pack?.questions).toHaveLength(12);
+
+    const productIdentity = pack?.questions.find((question) =>
+      question.id.endsWith(":q.product-identity"),
+    );
+    const condition = pack?.questions.find((question) =>
+      question.id.endsWith(":q.condition"),
+    );
+    const sector = pack?.questions.find((question) =>
+      question.id.endsWith(":q.sector"),
+    );
+
+    expect(productIdentity).toMatchObject({
+      prompt: "What is the exact product, model, technical construction, principal function, materials, intended use and retail presentation?",
+      answerType: "document",
+      options: [],
+    });
+    expect(condition).toMatchObject({
+      answerType: "single_select",
+      options: [
+        "New finished goods",
+        "Components or parts",
+        "Samples for testing",
+        "Used or refurbished",
+        "Waste or scrap",
+        "Repair or re-export",
+        "Unknown",
+      ],
+    });
+    expect(sector).toMatchObject({ answerType: "multi_select" });
+    expect(pack?.questions.every((question) =>
+      !question.prompt.startsWith("Does this research trigger apply"),
+    )).toBe(true);
+  });
+
   it("loads all seven independently reviewed final packs through KnowledgePackV1", () => {
     expect(researchAdmissionManifest).toMatchObject({
       publication_state: "final",
@@ -92,11 +129,14 @@ describe("published research admission", () => {
 
     expect(roadmap.status).toBe("needs-information");
     expect(roadmap.questions.length).toBeGreaterThan(0);
-    expect(roadmap.tasks.every((task) => task.actionability === "withheld")).toBe(
-      true,
-    );
+    const affectedTaskIds = new Set(roadmap.questions.flatMap((question) => question.blocksTaskIds));
+    expect(roadmap.tasks
+      .filter((task) => affectedTaskIds.has(task.id))
+      .every((task) => task.actionability === "withheld")).toBe(true);
     expect(
-      roadmap.tasks.every((task) => (task.journey?.instructions.length ?? 0) === 0),
+      roadmap.tasks
+        .filter((task) => affectedTaskIds.has(task.id))
+        .every((task) => (task.journey?.instructions.length ?? 0) === 0),
     ).toBe(true);
   });
 

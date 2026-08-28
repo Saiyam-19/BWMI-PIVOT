@@ -78,6 +78,8 @@ export function createAdmittedPack(
       factKey: "ownsItem",
       prompt: "Do you own the test item?",
       reason: "Ownership changes this roadmap.",
+      answerType: "boolean",
+      options: ["Yes", "No"],
     },
   ];
   const tasks: KnowledgePackV1["tasks"] = [

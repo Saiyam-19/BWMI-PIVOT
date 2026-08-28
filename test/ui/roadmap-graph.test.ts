@@ -72,6 +72,28 @@ function roadmap(tasks: readonly RoadmapTask[]): Roadmap {
 }
 
 describe("projectRoadmapGraph", () => {
+  it("always renders the outcome and a useful next state when every task is excluded", () => {
+    const empty = roadmap([]);
+    const model = projectRoadmapGraph(empty);
+
+    expect(model.nodes[0]).toMatchObject({
+      id: "outcome:rm-graph",
+      kind: "outcome",
+      title: empty.outcomeTitle,
+    });
+    expect(model.nodes).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: "state",
+        title: "No tasks are currently applicable",
+      }),
+      expect.objectContaining({
+        kind: "excluded",
+        title: "Excluded task",
+      }),
+    ]));
+    expect(model.edges.length).toBeGreaterThan(0);
+  });
+
   it("adds one explanatory outcome node for multiple roots and points it at each root", () => {
     const model = projectRoadmapGraph(roadmap([
       task("root-b", "ready"),
@@ -84,11 +106,13 @@ describe("projectRoadmapGraph", () => {
       "root-a",
       "root-b",
       "dependent",
+      "excluded:excluded",
     ]);
     expect(model.edges.map(({ source, target }) => [source, target])).toEqual([
       ["outcome:rm-graph", "root-a"],
       ["outcome:rm-graph", "root-b"],
       ["root-a", "dependent"],
+      ["outcome:rm-graph", "excluded:excluded"],
     ]);
   });
 
@@ -114,7 +138,7 @@ describe("projectRoadmapGraph", () => {
       }),
     ]));
 
-    expect(model.nodes[0]).toMatchObject({
+    expect(model.nodes.find((node) => node.id === "unknown")).toMatchObject({
       id: "unknown",
       kind: "task",
       applicability: "unknown",

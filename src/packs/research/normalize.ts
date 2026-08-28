@@ -9,7 +9,6 @@ import {
   type JourneyStepDefinition,
   type KnowledgePackV1,
   type QuestionDefinition,
-  type Rule,
   type TaskDefinition,
 } from "../../domain.js";
 
@@ -513,14 +512,33 @@ const unique = (values: readonly string[]): readonly string[] => [...new Set(val
 const entityId = (packId: string, type: string, originalId: string): string =>
   `${packId}:${type}:${originalId}`;
 
-const taskFactKey = (packId: string, taskId: string): string =>
-  entityId(packId, "fact.task-applicable", taskId);
+const questionFactKey = (packId: string, questionId: string): string =>
+  entityId(packId, "fact.question", questionId);
 
-const claimFactKey = (packId: string, claimId: string): string =>
-  entityId(packId, "fact.claim-applicable", claimId);
+const supportedAnswerTypes = new Set<QuestionDefinition["answerType"]>([
+  "boolean",
+  "single_select",
+  "multi_select",
+  "text",
+  "number",
+  "date",
+  "identifier",
+  "document",
+  "unknown",
+]);
 
-const stateFactKey = (packId: string, taskId: string): string =>
-  entityId(packId, "fact.state-local-applicable", taskId);
+function mapAnswerType(
+  answerType: string,
+  questionId: string,
+): QuestionDefinition["answerType"] {
+  if (supportedAnswerTypes.has(answerType as QuestionDefinition["answerType"])) {
+    return answerType as QuestionDefinition["answerType"];
+  }
+  throw new ResearchPackValidationError([{
+    path: `qualifying_questions.${questionId}.answer_type`,
+    message: `Unsupported qualifying-question answer type ${answerType}.`,
+  }]);
+}
 
 function mapStatus(status: string): ClaimStatus {
   switch (status) {
@@ -563,12 +581,6 @@ function sourceIsAdmissible(source: ResearchSource, verificationDate: string): b
     source.verified_on === verificationDate;
 }
 
-function ruleForFacts(facts: readonly string[]): Rule | undefined {
-  if (facts.length === 0) return undefined;
-  const rules = facts.map((field) => ({ field, operator: "equals" as const, value: true }));
-  return rules.length === 1 ? rules[0] : { any: rules };
-}
-
 export function normalizeResearchPack(
   input: unknown,
   profile: ResearchPackProfile,
@@ -601,6 +613,11 @@ export function normalizeResearchPack(
     task.completion_proof_ids.forEach((id) => { if (!proofsById.has(id)) unknownReference(`tasks.${task.id}.completion_proof_ids`, id); });
     task.claim_ids.forEach((id) => { if (!originalClaimsById.has(id)) unknownReference(`tasks.${task.id}.claim_ids`, id); });
   }
+  for (const question of research.qualifying_questions) {
+    question.affects_task_ids.forEach((id) => {
+      if (!taskIds.has(id)) unknownReference(`qualifying_questions.${question.id}.affects_task_ids`, id);
+    });
+  }
   for (const claim of research.claims) {
     claim.source_ids.forEach((id) => { if (!originalSourcesById.has(id)) unknownReference(`claims.${claim.id}.source_ids`, id); });
   }
@@ -611,6 +628,38 @@ export function normalizeResearchPack(
   for (const proof of research.completion_proofs) {
     if (!actors.has(proof.issuing_actor_id)) unknownReference(`completion_proofs.${proof.id}.issuing_actor_id`, proof.issuing_actor_id);
     proof.claim_ids.forEach((id) => { if (!originalClaimsById.has(id)) unknownReference(`completion_proofs.${proof.id}.claim_ids`, id); });
+  }
+
+  const questions: QuestionDefinition[] = research.qualifying_questions.map((question) => {
+    const answerType = mapAnswerType(question.answer_type, question.id);
+    return {
+      id: entityId(profile.packId, "question", question.id),
+      factKey: questionFactKey(profile.packId, question.id),
+      prompt: question.question,
+      reason: question.why_it_matters,
+      answerType,
+      options: question.options,
+      ...(answerType === "document"
+        ? {
+            unsupportedReason:
+              "This navigator does not collect or upload documents. Keep this fact unknown and use the affected task details to verify the required evidence safely.",
+          }
+        : answerType === "unknown"
+          ? {
+              unsupportedReason:
+                "The source pack does not define a safe answer format for this question. Keep it unknown and use the affected task details to resolve it.",
+            }
+        : {}),
+    };
+  });
+  const questionFactKeysByTaskId = new Map<string, string[]>();
+  for (const question of research.qualifying_questions) {
+    for (const taskId of question.affects_task_ids) {
+      questionFactKeysByTaskId.set(taskId, [
+        ...(questionFactKeysByTaskId.get(taskId) ?? []),
+        questionFactKey(profile.packId, question.id),
+      ]);
+    }
   }
 
   const sourceDefinitions: EvidenceSourceDefinition[] = research.sources.map((source) => ({
@@ -669,11 +718,6 @@ export function normalizeResearchPack(
         ? {
             verifiedOn: claim.verified_on,
             reviewDueOn: claim.verified_on,
-            appliesWhen: {
-              field: claimFactKey(profile.packId, claim.id),
-              operator: "equals",
-              value: true,
-            } as const,
           }
         : {}),
     };
@@ -691,47 +735,6 @@ export function normalizeResearchPack(
       applicability: claim.applicability,
       locator: claim.locator,
       freshnessRisk: claim.freshness_risk,
-    });
-  }
-
-  const consumerTaskIds = new Map<string, Set<string>>();
-  const addConsumer = (claimId: string, taskId: string): void => {
-    const current = consumerTaskIds.get(claimId) ?? new Set<string>();
-    current.add(taskId);
-    consumerTaskIds.set(claimId, current);
-  };
-  for (const task of research.tasks) {
-    task.claim_ids.forEach((claimId) => addConsumer(claimId, task.id));
-    task.portal_journey_ids.forEach((journeyId) =>
-      journeysById.get(journeyId)!.claim_ids.forEach((claimId) => addConsumer(claimId, task.id)),
-    );
-    task.completion_proof_ids.forEach((proofId) =>
-      proofsById.get(proofId)!.claim_ids.forEach((claimId) => addConsumer(claimId, task.id)),
-    );
-  }
-
-  const questions: QuestionDefinition[] = [];
-  for (const task of research.tasks) {
-    questions.push({
-      id: entityId(profile.packId, "question.task-applicable", task.id),
-      factKey: taskFactKey(profile.packId, task.id),
-      prompt: `Does this research trigger apply to your case: ${task.trigger}`,
-      reason: task.fail_closed_note,
-    });
-  }
-  for (const claim of research.claims) {
-    const normalized = normalizedClaimsByOriginalId.get(claim.id)!;
-    if (normalized.status !== "verified") continue;
-    const consumerFacts = [...(consumerTaskIds.get(claim.id) ?? [])].map((taskId) =>
-      taskFactKey(profile.packId, taskId),
-    );
-    const askWhen = ruleForFacts(consumerFacts);
-    questions.push({
-      id: entityId(profile.packId, "question.claim-applicable", claim.id),
-      factKey: claimFactKey(profile.packId, claim.id),
-      prompt: `Does this sourced applicability statement match your case: ${claim.applicability}`,
-      reason: `This answer controls whether claim ${claim.id} can support an actionable instruction.`,
-      ...(askWhen ? { askWhen } : {}),
     });
   }
 
@@ -941,12 +944,7 @@ export function normalizeResearchPack(
       authority,
       classification: isOutsideScope ? "outside-scope" : "conditional",
       dependencies,
-      appliesWhen: {
-        field: taskFactKey(profile.packId, task.id),
-        operator: "equals",
-        value: true,
-      },
-      requiredAnswers: [taskFactKey(profile.packId, task.id)],
+      requiredAnswers: questionFactKeysByTaskId.get(task.id) ?? [],
       requiredInformation: requiredInputs,
       requiredDocuments: [],
       requiredClaimIds: unique(requiredClaimIds),
@@ -961,18 +959,6 @@ export function normalizeResearchPack(
     });
 
     if (task.state_local_dependency.applies) {
-      const stateQuestionId = entityId(profile.packId, "question.state-local", task.id);
-      questions.push({
-        id: stateQuestionId,
-        factKey: stateFactKey(profile.packId, task.id),
-        prompt: `Does this state or local dependency apply to your case: ${task.state_local_dependency.description}`,
-        reason: "State and local dependencies remain visible, but their detailed procedure is outside central-oriented V1.",
-        askWhen: {
-          field: taskFactKey(profile.packId, task.id),
-          operator: "equals",
-          value: true,
-        },
-      });
       tasks.push({
         id: stateDependencyId,
         title: `Resolve state or local dependency for ${task.title}`,
@@ -980,16 +966,7 @@ export function normalizeResearchPack(
         reason: `Research status: ${task.state_local_dependency.status}.`,
         authority: { name: "Relevant state or local authority", type: "state" },
         classification: "outside-scope",
-        appliesWhen: {
-          all: [
-            { field: taskFactKey(profile.packId, task.id), operator: "equals", value: true },
-            { field: stateFactKey(profile.packId, task.id), operator: "equals", value: true },
-          ],
-        },
-        requiredAnswers: [
-          taskFactKey(profile.packId, task.id),
-          stateFactKey(profile.packId, task.id),
-        ],
+        requiredAnswers: questionFactKeysByTaskId.get(task.id) ?? [],
         requiredInformation: [],
         requiredDocuments: [],
         requiredClaimIds: [],
@@ -1006,7 +983,7 @@ export function normalizeResearchPack(
       code: "free-text-blocking-logic-not-mapped",
       disposition: "not-mapped",
       path: "qualifying_questions[*].blocking_logic",
-      message: "Research blocking logic is prose, so it was not converted into executable rules; task and claim confirmations were generated instead.",
+      message: "Authored typed questions and options are preserved. Free-text blocking logic is not coerced into executable applicability rules; affected tasks remain needs-information until a supported answer is provided.",
     },
     {
       code: "measures-not-mapped",

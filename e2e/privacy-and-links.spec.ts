@@ -41,7 +41,7 @@ test("admitted journeys expose only real HTTPS links and withheld tasks expose n
 
   expect(renderedRoadmapId).toBeTruthy();
   await page.goto(`/roadmaps/${renderedRoadmapId}`);
-  await page.getByRole("tab", { name: "Linear view" }).click();
+  await page.getByRole("tab", { name: "Accessible list" }).click();
   await page.getByText(renderedTaskTitle, { exact: true })
     .locator("xpath=ancestor::button")
     .first()

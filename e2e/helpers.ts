@@ -1,6 +1,6 @@
-import { expect, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, type APIRequestContext } from "@playwright/test";
 
-import type { Roadmap } from "../src/domain.js";
+import type { AnswerValue, Roadmap, RoadmapQuestion } from "../src/domain.js";
 
 export const outcomes = [
   ["import-regulated-product", "Import and legally sell a first regulated product shipment in India"],
@@ -15,7 +15,7 @@ export const outcomes = [
 export async function createRoadmap(
   request: APIRequestContext,
   outcomeId: string,
-  answers?: Readonly<Record<string, string | number | boolean | null>>,
+  answers?: Readonly<Record<string, AnswerValue>>,
 ): Promise<Roadmap> {
   const response = await request.post("/api/roadmaps", {
     data: {
@@ -36,10 +36,13 @@ export async function answerEveryQuestion(
   for (let pass = 0; pass < 20 && roadmap.questions.length > 0; pass += 1) {
     const fresh = roadmap.questions.filter((question) => !answered.has(question.factKey));
     if (fresh.length === 0) break;
-    const answers = Object.fromEntries(fresh.map((question) => {
+    const supported = fresh.flatMap((question) => {
       answered.add(question.factKey);
-      return [question.factKey, true];
-    }));
+      const answer = representativeAnswer(question);
+      return answer === undefined ? [] : [[question.factKey, answer] as const];
+    });
+    if (supported.length === 0) break;
+    const answers = Object.fromEntries(supported);
     const response = await request.patch(`/api/roadmaps/${roadmap.id}/answers`, {
       data: { answers },
     });
@@ -53,6 +56,21 @@ export async function answerEveryQuestion(
   return roadmap;
 }
 
+function representativeAnswer(question: RoadmapQuestion): AnswerValue | undefined {
+  switch (question.answerType) {
+    case "boolean": return true;
+    case "single_select": return question.options[0];
+    case "multi_select": return question.options[0] ? [question.options[0]] : undefined;
+    case "number": return 1;
+    case "date": return "2026-08-28";
+    case "identifier": return "TEST-IDENTIFIER";
+    case "text": return "Confirmed for this browser verification";
+    case "document":
+    case "unknown":
+      return undefined;
+  }
+}
+
 export async function createRoadmapWithReadyTask(request: APIRequestContext) {
   for (const [outcomeId] of outcomes) {
     const roadmap = await answerEveryQuestion(request, await createRoadmap(request, outcomeId));
@@ -64,17 +82,6 @@ export async function createRoadmapWithReadyTask(request: APIRequestContext) {
     if (task) return { roadmap, task };
   }
   throw new Error("No admitted outcome produced a ready proof-backed task.");
-}
-
-export async function chooseUnknownAndOpen(page: Page): Promise<void> {
-  const dialog = page.getByRole("dialog");
-  await expect(dialog).toBeVisible();
-  const unknowns = dialog.getByRole("button", { name: "I don't know yet" });
-  for (let index = 0; index < await unknowns.count(); index += 1) {
-    await unknowns.nth(index).click();
-  }
-  await dialog.getByRole("button", { name: "Open my roadmap" }).click();
-  await page.waitForURL(/\/roadmaps\//);
 }
 
 export function expectSafeErrorBody(body: string): void {

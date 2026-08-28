@@ -2,7 +2,7 @@ export const REGISTRY_SCHEMA_VERSION = "1.0.0" as const;
 
 export type RegistrySchemaVersion = typeof REGISTRY_SCHEMA_VERSION;
 export type Applicability = true | false | "unknown";
-export type AnswerValue = string | number | boolean | null;
+export type AnswerValue = string | number | boolean | readonly string[] | null;
 export type Answers = Readonly<Record<string, AnswerValue | undefined>>;
 
 export type EntryPoint =
@@ -169,6 +169,18 @@ export interface QuestionDefinition {
   readonly factKey: string;
   readonly prompt: string;
   readonly reason: string;
+  readonly answerType:
+    | "boolean"
+    | "single_select"
+    | "multi_select"
+    | "text"
+    | "number"
+    | "date"
+    | "identifier"
+    | "document"
+    | "unknown";
+  readonly options: readonly string[];
+  readonly unsupportedReason?: string;
   readonly askWhen?: Rule;
 }
 

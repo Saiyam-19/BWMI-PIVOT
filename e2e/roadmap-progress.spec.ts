@@ -17,7 +17,7 @@ test("answers change the graph while explicit unknowns stay blocked", async ({ p
   expect(unknown.tasks.some((task) => task.status === "needs-information")).toBe(true);
 
   await page.goto(`/roadmaps/${unknown.id}`);
-  await page.getByRole("tab", { name: "Linear view" }).click();
+  await page.getByRole("tab", { name: "Accessible list" }).click();
   const withheld = page.getByText("Instructions withheld").first();
   await expect(withheld).toBeVisible();
   await withheld.locator("xpath=ancestor::button").click();
@@ -30,7 +30,7 @@ test("task detail is proof-gated and completed progress survives reload", async 
   const { roadmap, task } = await createRoadmapWithReadyTask(request);
 
   await page.goto(`/roadmaps/${roadmap.id}`);
-  await page.getByRole("tab", { name: "Linear view" }).click();
+  await page.getByRole("tab", { name: "Accessible list" }).click();
   const trigger = page.getByRole("button", { name: new RegExp(task.title, "i") });
   await trigger.click();
   const sheet = page.getByRole("dialog");
@@ -52,7 +52,7 @@ test("task detail is proof-gated and completed progress survives reload", async 
   await expect(sheet.getByText("Completion proof confirmed")).toBeVisible();
 
   await page.reload();
-  await page.getByRole("tab", { name: "Linear view" }).click();
+  await page.getByRole("tab", { name: "Accessible list" }).click();
   await page.getByRole("button", { name: new RegExp(task.title, "i") }).click();
   await expect(page.getByRole("dialog").getByText("Completion proof confirmed")).toBeVisible();
 });

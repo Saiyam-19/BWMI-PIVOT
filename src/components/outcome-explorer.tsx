@@ -3,7 +3,6 @@
 import { Filter, LoaderCircle, SearchX } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { IntakeDialog } from "@/components/intake-dialog";
 import { NaturalLanguageEntry } from "@/components/natural-language-entry";
 import { OutcomeCard } from "@/components/outcome-card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -14,7 +13,7 @@ import {
   createRoadmap,
   loadOutcomeCatalog,
 } from "@/lib/client-api";
-import type { ClientRoadmap, OutcomeCatalog } from "@/lib/client-api";
+import type { OutcomeCatalog } from "@/lib/client-api";
 
 export const CITIZEN_DOMAINS = [
   ["identity-certificates-documents", "Identity, certificates and documents"],
@@ -46,7 +45,6 @@ export function OutcomeExplorer({ onNavigate = navigateBrowser }: OutcomeExplore
   const [intentError, setIntentError] = useState<string>();
   const [startError, setStartError] = useState<string>();
   const [busy, setBusy] = useState(false);
-  const [roadmap, setRoadmap] = useState<ClientRoadmap>();
 
   useEffect(() => {
     let active = true;
@@ -87,8 +85,7 @@ export function OutcomeExplorer({ onNavigate = navigateBrowser }: OutcomeExplore
     setStartError(undefined);
     try {
       const created = await createRoadmap(entry);
-      if (created.questions.length === 0) completeRoadmap(created.id);
-      else setRoadmap(created);
+      completeRoadmap(created.id);
     } catch (caught) {
       if (
         entry.kind === "natural-language" &&
@@ -228,7 +225,7 @@ export function OutcomeExplorer({ onNavigate = navigateBrowser }: OutcomeExplore
           </div>
         )}
 
-        {busy && !roadmap ? (
+        {busy ? (
           <p className="mt-5 flex items-center gap-2 text-sm font-medium text-slate-600" role="status">
             <LoaderCircle aria-hidden="true" className="size-4 animate-spin" />
             Creating your private roadmap…
@@ -236,16 +233,6 @@ export function OutcomeExplorer({ onNavigate = navigateBrowser }: OutcomeExplore
         ) : null}
       </section>
 
-      {roadmap ? (
-        <IntakeDialog
-          open
-          roadmap={roadmap}
-          onOpenChange={(open) => {
-            if (!open) setRoadmap(undefined);
-          }}
-          onComplete={completeRoadmap}
-        />
-      ) : null}
     </main>
   );
 }

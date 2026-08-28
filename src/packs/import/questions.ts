@@ -1,6 +1,9 @@
 import type { QuestionDefinition } from "../../domain.js";
 
-const importQuestionDrafts: readonly Omit<QuestionDefinition, "factKey">[] = [
+const importQuestionDrafts: readonly Omit<
+  QuestionDefinition,
+  "factKey" | "answerType" | "options"
+>[] = [
   {
     id: "commercialPurpose",
     prompt: "Is this shipment connected with trade, manufacture or commercial resale?",
@@ -102,4 +105,6 @@ export const importQuestions: readonly QuestionDefinition[] =
   importQuestionDrafts.map((question) => ({
     ...question,
     factKey: question.id,
+    answerType: "text",
+    options: [],
   }));

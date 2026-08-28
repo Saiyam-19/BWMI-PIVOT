@@ -1,255 +1,222 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  Background,
-  BackgroundVariant,
-  Controls,
-  ReactFlow,
-  type ReactFlowInstance,
-} from "@xyflow/react";
+import { ArrowDown, CircleAlert, LockKeyhole } from "lucide-react";
+import { useMemo } from "react";
 
-import { RoadmapEdge, type RoadmapFlowEdge } from "@/components/roadmap/roadmap-edge";
-import { RoadmapNode, type RoadmapFlowNode } from "@/components/roadmap/roadmap-node";
-import { RoadmapToolbar } from "@/components/roadmap/roadmap-toolbar";
-import type {
-  RoadmapGraphModel,
-  RoadmapGraphNode,
-  RoadmapGraphPosition,
-} from "@/lib/roadmap-graph";
+import { ROADMAP_STATUS_LABELS } from "@/components/roadmap/roadmap-node";
+import type { RoadmapGraphModel, RoadmapGraphNode } from "@/lib/roadmap-graph";
+import { cn } from "@/lib/utils";
 
-interface RoadmapCanvasProps {
-  readonly model: RoadmapGraphModel;
-  readonly onSelectTask: (taskId: string) => void;
-}
+type RoadmapCanvasProps = {
+  model: RoadmapGraphModel;
+  selectedTaskId: string | null;
+  onSelectTask: (taskId: string) => void;
+};
 
-const nodeTypes = { roadmap: RoadmapNode };
-const edgeTypes = { roadmap: RoadmapEdge };
-const HORIZONTAL_BRANCH_GAP = 352;
-const VERTICAL_RANK_GAP = 172;
-
-interface RoadmapDisplayLayout {
-  readonly focusIds: readonly string[];
-  readonly positions: ReadonlyMap<string, RoadmapGraphPosition>;
-  readonly spineEdgeIds: ReadonlySet<string>;
-}
-
-function composeRoadmapDisplay(model: RoadmapGraphModel): RoadmapDisplayLayout {
-  const byId = new Map(model.nodes.map((node) => [node.id, node]));
-  const children = new Map<string, string[]>();
+function roadmapStages(model: RoadmapGraphModel): RoadmapGraphNode[][] {
+  const taskNodes = model.nodes.filter((node) => node.kind === "task");
+  const taskIds = new Set(taskNodes.map((node) => node.id));
   const parents = new Map<string, string[]>();
-  const indegree = new Map(model.nodes.map((node) => [node.id, 0]));
 
   for (const edge of model.edges) {
-    if (!byId.has(edge.source) || !byId.has(edge.target)) continue;
-    children.set(edge.source, [...(children.get(edge.source) ?? []), edge.target]);
+    if (!taskIds.has(edge.target) || !taskIds.has(edge.source)) continue;
     parents.set(edge.target, [...(parents.get(edge.target) ?? []), edge.source]);
-    indegree.set(edge.target, (indegree.get(edge.target) ?? 0) + 1);
   }
 
-  const pathScores = new Map<string, number>();
-  const scorePath = (id: string, visiting = new Set<string>()): number => {
-    const known = pathScores.get(id);
-    if (known !== undefined) return known;
-    if (visiting.has(id)) return 0;
-    const nextVisiting = new Set(visiting).add(id);
-    const score = 1 + Math.max(
-      0,
-      ...(children.get(id) ?? []).map((childId) => scorePath(childId, nextVisiting)),
-    );
-    pathScores.set(id, score);
-    return score;
+  const depths = new Map<string, number>();
+  const visiting = new Set<string>();
+  const depthFor = (nodeId: string): number => {
+    const cached = depths.get(nodeId);
+    if (cached !== undefined) return cached;
+    if (visiting.has(nodeId)) return 0;
+
+    visiting.add(nodeId);
+    const parentIds = parents.get(nodeId) ?? [];
+    const depth = parentIds.length === 0 ? 0 : Math.max(...parentIds.map(depthFor)) + 1;
+    visiting.delete(nodeId);
+    depths.set(nodeId, depth);
+    return depth;
   };
 
-  const roots = model.nodes
-    .filter((node) => (indegree.get(node.id) ?? 0) === 0)
-    .sort((a, b) => scorePath(b.id) - scorePath(a.id) || a.id.localeCompare(b.id));
-  const outcome = model.nodes.find((node) => node.kind === "outcome");
-  const spineIds: string[] = [];
-  const seenSpine = new Set<string>();
-  let cursor = outcome?.id ?? roots[0]?.id;
-
-  while (cursor && !seenSpine.has(cursor)) {
-    spineIds.push(cursor);
-    seenSpine.add(cursor);
-    cursor = [...(children.get(cursor) ?? [])]
-      .filter((id) => !seenSpine.has(id))
-      .sort((a, b) => scorePath(b) - scorePath(a) || a.localeCompare(b))[0];
+  const grouped = new Map<number, RoadmapGraphNode[]>();
+  for (const node of taskNodes) {
+    const depth = depthFor(node.id);
+    grouped.set(depth, [...(grouped.get(depth) ?? []), node]);
   }
 
-  const depths = new Map(roots.map((node) => [node.id, 0]));
-  const remainingIndegree = new Map(indegree);
-  const queue = roots.map((node) => node.id);
-  for (let index = 0; index < queue.length; index += 1) {
-    const id = queue[index]!;
-    const nextDepth = (depths.get(id) ?? 0) + 1;
-    for (const childId of [...(children.get(id) ?? [])].sort()) {
-      depths.set(childId, Math.max(depths.get(childId) ?? 0, nextDepth));
-      const nextIndegree = (remainingIndegree.get(childId) ?? 1) - 1;
-      remainingIndegree.set(childId, nextIndegree);
-      if (nextIndegree === 0) queue.push(childId);
-    }
-  }
-
-  const maxKnownDepth = Math.max(0, ...depths.values());
-  for (const node of model.nodes) {
-    if (!depths.has(node.id)) depths.set(node.id, maxKnownDepth + 1);
-  }
-
-  const spineSet = new Set(spineIds);
-  const spineByDepth = new Map(
-    spineIds.map((id) => [depths.get(id) ?? 0, id]),
-  );
-  const positions = new Map<string, RoadmapGraphPosition>();
-  const maxDepth = Math.max(0, ...depths.values());
-
-  for (let depth = 0; depth <= maxDepth; depth += 1) {
-    const nodesAtDepth = model.nodes
-      .filter((node) => depths.get(node.id) === depth)
-      .sort((a, b) => a.position.x - b.position.x || a.id.localeCompare(b.id));
-    const spineId = spineByDepth.get(depth);
-    const usedLanes = new Set<number>();
-
-    if (spineId) {
-      const spineNode = byId.get(spineId)!;
-      positions.set(spineId, {
-        x: -spineNode.width / 2,
-        y: depth * VERTICAL_RANK_GAP,
-      });
-      usedLanes.add(0);
-    }
-
-    for (const node of nodesAtDepth.filter((candidate) => !spineSet.has(candidate.id))) {
-      const parentCenters = (parents.get(node.id) ?? []).flatMap((parentId) => {
-        const parent = byId.get(parentId);
-        const position = positions.get(parentId);
-        return parent && position ? [position.x + parent.width / 2] : [];
-      });
-      const desiredCenter = parentCenters.length > 0
-        ? parentCenters.reduce((sum, value) => sum + value, 0) / parentCenters.length
-        : node.position.x;
-      const desiredLane = Math.round(desiredCenter / HORIZONTAL_BRANCH_GAP) ||
-        (node.position.x < 0 ? -1 : 1);
-      const laneOptions = Array.from({ length: Math.max(8, nodesAtDepth.length * 2) }, (_, index) => {
-        const lane = Math.floor(index / 2) + 1;
-        return index % 2 === 0 ? -lane : lane;
-      }).sort((a, b) =>
-        Math.abs(a - desiredLane) - Math.abs(b - desiredLane) ||
-        Math.abs(a) - Math.abs(b) ||
-        a - b
-      );
-      const lane = laneOptions.find((candidate) => !usedLanes.has(candidate)) ??
-        (usedLanes.size + 1);
-      usedLanes.add(lane);
-      positions.set(node.id, {
-        x: lane * HORIZONTAL_BRANCH_GAP - node.width / 2,
-        y: depth * VERTICAL_RANK_GAP,
-      });
-    }
-  }
-
-  const spineEdgeIds = new Set(
-    spineIds.slice(1).flatMap((target, index) => {
-      const source = spineIds[index]!;
-      const edge = model.edges.find((candidate) =>
-        candidate.source === source && candidate.target === target
-      );
-      return edge ? [edge.id] : [];
-    }),
-  );
-
-  return {
-    focusIds: spineIds.slice(0, 4),
-    positions,
-    spineEdgeIds,
-  };
+  return [...grouped.entries()]
+    .sort(([left], [right]) => left - right)
+    .map(([, nodes]) => nodes.sort((left, right) => left.title.localeCompare(right.title)));
 }
 
-export function RoadmapCanvas({ model, onSelectTask }: RoadmapCanvasProps) {
-  const [instance, setInstance] = useState<ReactFlowInstance<RoadmapFlowNode, RoadmapFlowEdge>>();
-  const display = useMemo(() => composeRoadmapDisplay(model), [model]);
-  const nodes = useMemo<RoadmapFlowNode[]>(() => model.nodes.map((node) => ({
-    id: node.id,
-    type: "roadmap",
-    position: display.positions.get(node.id) ?? node.position,
-    data: { graphNode: node, onSelect: onSelectTask },
-    draggable: false,
-    connectable: false,
-    focusable: node.kind === "task",
-    selectable: node.kind === "task",
-    style: { width: node.width, height: node.height },
-  })), [display.positions, model.nodes, onSelectTask]);
-  const edges = useMemo<RoadmapFlowEdge[]>(() => model.edges.map((edge) => ({
-    id: edge.id,
-    type: "roadmap",
-    source: edge.source,
-    target: edge.target,
-    focusable: false,
-    selectable: false,
-    data: { kind: edge.kind, emphasis: display.spineEdgeIds.has(edge.id) },
-  })), [display.spineEdgeIds, model.edges]);
-  const initialViewNodes = useMemo(
-    () => display.focusIds.map((id) => ({ id })),
-    [display.focusIds],
-  );
+function TaskTile({
+  node,
+  selected,
+  onSelect,
+}: {
+  node: RoadmapGraphNode;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const locked = node.actionability === "withheld";
 
   return (
-    <div
-      aria-label="Interactive roadmap canvas"
-      className="roadmap-canvas h-[calc(100svh-15.5rem)] min-h-[38rem] w-full overflow-hidden border-y border-slate-300 bg-[#f8f9fb] sm:h-[calc(100svh-14rem)] sm:min-h-[43rem] sm:border"
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        "group relative w-full rounded-sm border-2 border-slate-950 bg-[#fff7dc] px-3 py-2 text-left shadow-[3px_3px_0_#0f172a] transition",
+        "hover:-translate-y-0.5 hover:bg-[#fff1bd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2",
+        selected && "bg-[#ffe69a] ring-2 ring-blue-700 ring-offset-2",
+      )}
+      aria-pressed={selected}
     >
-      <ReactFlow<RoadmapFlowNode, RoadmapFlowEdge>
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        onInit={setInstance}
-        onNodeClick={(_, node) => {
-          if (node.data.graphNode.kind === "task") onSelectTask(node.id);
-        }}
-        fitView
-        fitViewOptions={{
-          nodes: initialViewNodes,
-          padding: 0.24,
-          minZoom: 0.62,
-          maxZoom: 1.05,
-        }}
-        minZoom={0.3}
-        maxZoom={1.6}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable
-        edgesFocusable={false}
-        panOnScroll
-        zoomOnPinch
-        zoomOnDoubleClick={false}
-        proOptions={{ hideAttribution: true }}
-        aria-label="Government task dependency roadmap"
-      >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={22}
-          size={1.1}
-          color="#cbd1dc"
-          bgColor="#f8f9fb"
+      <span className="block text-sm font-bold leading-snug text-slate-950">{node.title}</span>
+      <span className="mt-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-600">
+        {locked ? <LockKeyhole className="size-3" aria-hidden="true" /> : null}
+        {node.status ? ROADMAP_STATUS_LABELS[node.status] : "Open task"}
+      </span>
+    </button>
+  );
+}
+
+function TaskBranch({
+  nodes,
+  side,
+  selectedTaskId,
+  onSelectTask,
+}: {
+  nodes: RoadmapGraphNode[];
+  side: "left" | "right";
+  selectedTaskId: string | null;
+  onSelectTask: (taskId: string) => void;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative grid gap-4 pl-12 md:pl-0",
+        side === "left" ? "md:pr-12" : "md:pl-12",
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className={cn(
+          "absolute top-7 hidden h-px w-12 border-t-2 border-dotted border-slate-700 md:block",
+          side === "left" ? "right-0" : "left-0",
+        )}
+      />
+      {nodes.map((node) => (
+        <TaskTile
+          key={node.id}
+          node={node}
+          selected={selectedTaskId === node.id}
+          onSelect={() => onSelectTask(node.id)}
         />
-        <RoadmapToolbar
-          model={model}
-          onReset={() => void instance?.fitView({
-            nodes: initialViewNodes,
-            padding: 0.24,
-            minZoom: 0.62,
-            maxZoom: 1.05,
-            duration: 280,
-          })}
-        />
-        <Controls
-          position="bottom-left"
-          showInteractive={false}
-          fitViewOptions={{ padding: 0.22, duration: 280 }}
-          aria-label="Roadmap pan and zoom controls"
-        />
-      </ReactFlow>
+      ))}
     </div>
+  );
+}
+
+export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCanvasProps) {
+  const stages = useMemo(() => roadmapStages(model), [model]);
+  const outcome = model.nodes.find((node) => node.kind === "outcome");
+  const state = model.nodes.find((node) => node.kind === "state");
+  const excluded = model.nodes.filter((node) => node.kind === "excluded");
+
+  return (
+    <section
+      aria-label="Interactive roadmap"
+      className="roadmap-document relative overflow-hidden rounded-2xl border border-slate-300 bg-white px-4 py-8 shadow-sm sm:px-8 md:px-12 md:py-12"
+    >
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-10 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+            Read from top to bottom
+          </p>
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-medium text-slate-600">
+            <span className="inline-flex items-center gap-2">
+              <span className="size-3 rounded-full bg-blue-700" aria-hidden="true" /> Main journey
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="h-px w-5 border-t-2 border-dotted border-slate-700" aria-hidden="true" /> Related task
+            </span>
+          </div>
+        </div>
+
+        <div className="relative pb-12">
+          <span
+            aria-hidden="true"
+            className="absolute bottom-0 left-5 top-6 w-1 rounded-full bg-blue-700 md:left-1/2 md:-translate-x-1/2"
+          />
+
+          <div className="relative z-10 mx-auto mb-16 ml-12 max-w-xl rounded-sm border-2 border-slate-950 bg-white px-5 py-4 text-center shadow-[4px_4px_0_#0f172a] md:ml-auto">
+            <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-blue-700">Your outcome</p>
+            <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
+              {outcome?.title ?? "Government outcome roadmap"}
+            </h2>
+            {outcome?.summary ? <p className="mt-2 text-sm text-slate-600">{outcome.summary}</p> : null}
+          </div>
+
+          {stages.length > 0 ? (
+            <ol className="grid gap-14 md:gap-20">
+              {stages.map((nodes, index) => {
+                const side = index % 2 === 0 ? "left" : "right";
+                const centerLabel = index === 0 ? "Start here" : index === stages.length - 1 ? "Finish this stage" : "Continue the path";
+
+                return (
+                  <li key={`stage-${index}`} className="relative grid items-start gap-5 md:grid-cols-[minmax(0,1fr)_9rem_minmax(0,1fr)]">
+                    <div className={cn("md:col-start-1", side === "right" && "md:col-start-3")}>
+                      <TaskBranch
+                        nodes={nodes}
+                        side={side}
+                        selectedTaskId={selectedTaskId}
+                        onSelectTask={onSelectTask}
+                      />
+                    </div>
+
+                    <div className="absolute left-0 top-0 z-20 flex w-11 flex-col items-center md:static md:col-start-2 md:row-start-1 md:w-auto">
+                      <span className="flex size-11 items-center justify-center rounded-full border-2 border-slate-950 bg-[#ffd95a] text-sm font-black text-slate-950 shadow-[2px_2px_0_#0f172a]">
+                        {index + 1}
+                      </span>
+                      <span className="mt-2 hidden rounded-sm bg-blue-700 px-2 py-1 text-center text-[10px] font-extrabold uppercase tracking-[0.08em] text-white md:block">
+                        {centerLabel}
+                      </span>
+                      {index < stages.length - 1 ? <ArrowDown className="mt-3 hidden size-4 text-blue-700 md:block" aria-hidden="true" /> : null}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          ) : state ? (
+            <div className="relative z-10 ml-12 rounded-sm border-2 border-slate-950 bg-[#fff7dc] p-5 shadow-[3px_3px_0_#0f172a] md:mx-auto md:max-w-xl">
+              <div className="flex gap-3">
+                <CircleAlert className="mt-0.5 size-5 shrink-0 text-blue-700" aria-hidden="true" />
+                <div>
+                  <h3 className="font-black text-slate-950">{state.title}</h3>
+                  {state.summary ? <p className="mt-1 text-sm leading-6 text-slate-700">{state.summary}</p> : null}
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {excluded.length > 0 ? (
+            <aside className="relative z-10 mt-16 ml-12 rounded-lg border border-dashed border-slate-400 bg-slate-50 p-5 md:mx-auto md:max-w-2xl">
+              <h3 className="font-black text-slate-950">Branches currently marked not applicable</h3>
+              <p className="mt-1 text-sm text-slate-600">
+                They remain visible so the roadmap never becomes blank and you can review why they were set aside.
+              </p>
+              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+                {excluded.map((node) => (
+                  <li key={node.id} className="rounded-sm border border-slate-300 bg-white px-3 py-2">
+                    <span className="block text-sm font-bold text-slate-800">{node.title}</span>
+                    {node.summary ? <span className="mt-1 block text-xs leading-5 text-slate-600">{node.summary}</span> : null}
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          ) : null}
+        </div>
+      </div>
+    </section>
   );
 }

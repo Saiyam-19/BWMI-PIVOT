@@ -24,13 +24,21 @@ const statusClasses = {
 
 export function LinearRoadmap({ model, onSelectTask }: LinearRoadmapProps) {
   const taskNodes = model.nodes.filter((node) => node.kind === "task" && node.task);
+  const stateNode = model.nodes.find((node) => node.kind === "state");
+  const excludedNodes = model.nodes.filter((node) => node.kind === "excluded");
   const titleById = new Map(taskNodes.map((node) => [node.id, node.title]));
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
       <p className="max-w-[70ch] text-sm leading-6 text-slate-600">
-        Tasks are listed in dependency order. Open any task without dragging or zooming the canvas.
+        Tasks are listed in dependency order. Open any task without dragging, zooming, or horizontal scrolling.
       </p>
+      {stateNode ? (
+        <div className="mt-6 border-2 border-slate-900 bg-amber-50 px-4 py-4">
+          <h2 className="font-bold text-slate-950">{stateNode.title}</h2>
+          {stateNode.summary ? <p className="mt-2 text-sm leading-6 text-slate-700">{stateNode.summary}</p> : null}
+        </div>
+      ) : null}
       <ol className="mt-6 grid gap-0">
         {taskNodes.map((node, index) => {
           const task = node.task!;
@@ -85,6 +93,19 @@ export function LinearRoadmap({ model, onSelectTask }: LinearRoadmapProps) {
           );
         })}
       </ol>
+      {excludedNodes.length > 0 ? (
+        <section className="mt-8 border-t border-dashed border-slate-400 pt-5" aria-labelledby="excluded-branches-title">
+          <h2 id="excluded-branches-title" className="font-bold text-slate-950">Branches currently marked not applicable</h2>
+          <ul className="mt-3 grid gap-3">
+            {excludedNodes.map((node) => (
+              <li key={node.id} className="border border-slate-300 bg-slate-50 px-4 py-3">
+                <span className="font-semibold text-slate-800">{node.title}</span>
+                {node.summary ? <span className="mt-1 block text-sm leading-5 text-slate-600">{node.summary}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 }

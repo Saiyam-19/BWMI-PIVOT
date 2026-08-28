@@ -18,8 +18,9 @@ export interface RoadmapGraphPosition {
 
 export interface RoadmapGraphNode {
   readonly id: string;
-  readonly kind: "outcome" | "task";
+  readonly kind: "outcome" | "task" | "state" | "excluded";
   readonly title: string;
+  readonly summary?: string;
   readonly position: RoadmapGraphPosition;
   readonly width: number;
   readonly height: number;
@@ -34,7 +35,7 @@ export interface RoadmapGraphEdge {
   readonly id: string;
   readonly source: string;
   readonly target: string;
-  readonly kind: "primary" | "conditional" | "outcome";
+  readonly kind: "primary" | "conditional" | "outcome" | "excluded";
 }
 
 export interface RoadmapGraphModel {
@@ -127,29 +128,61 @@ export function projectRoadmapGraph(roadmap: Roadmap): RoadmapGraphModel {
     task.dependencies.every((dependencyId) => !taskIds.has(dependencyId))
   );
   const outcomeId = `outcome:${roadmap.id}`;
-  const includeOutcome = roots.length > 1;
+  const stateId = `state:${roadmap.id}`;
+  const excludedNodes: RoadmapGraphNode[] = roadmap.excludedTasks.map((task) => ({
+    id: `excluded:${task.id}`,
+    kind: "excluded",
+    title: task.title,
+    summary: task.reason,
+    position: { x: 0, y: 0 },
+    width: ROADMAP_NODE_WIDTH,
+    height: ROADMAP_NODE_HEIGHT,
+    applicability: false,
+    classification: "not-applicable",
+    status: "not-applicable",
+    actionability: "withheld",
+  }));
 
   const nodes: RoadmapGraphNode[] = [
-    ...(includeOutcome
+    {
+      id: outcomeId,
+      kind: "outcome",
+      title: roadmap.outcomeTitle,
+      summary: "Your selected government outcome remains visible while the roadmap is personalized.",
+      position: { x: 0, y: 0 },
+      width: OUTCOME_NODE_WIDTH,
+      height: OUTCOME_NODE_HEIGHT,
+    },
+    ...tasks.map(taskNode),
+    ...(tasks.length === 0
       ? [{
-          id: outcomeId,
-          kind: "outcome" as const,
-          title: roadmap.outcomeTitle,
+          id: stateId,
+          kind: "state" as const,
+          title: "No tasks are currently applicable",
+          summary: roadmap.excludedTasks.length > 0
+            ? "Review or change your answers to restore an excluded branch."
+            : "This outcome has no admitted tasks yet. Keep the roadmap and check back when verified guidance is available.",
           position: { x: 0, y: 0 },
           width: OUTCOME_NODE_WIDTH,
-          height: OUTCOME_NODE_HEIGHT,
+          height: ROADMAP_NODE_HEIGHT,
         }]
       : []),
-    ...tasks.map(taskNode),
+    ...excludedNodes,
   ];
   const edges: RoadmapGraphEdge[] = [
-    ...(includeOutcome
-      ? roots.map((root) => ({
-          id: `${outcomeId}->${root.id}`,
+    ...roots.map((root) => ({
+      id: `${outcomeId}->${root.id}`,
+      source: outcomeId,
+      target: root.id,
+      kind: "outcome" as const,
+    })),
+    ...(tasks.length === 0
+      ? [{
+          id: `${outcomeId}->${stateId}`,
           source: outcomeId,
-          target: root.id,
+          target: stateId,
           kind: "outcome" as const,
-        }))
+        }]
       : []),
     ...tasks.flatMap((task) =>
       task.dependencies
@@ -162,6 +195,12 @@ export function projectRoadmapGraph(roadmap: Roadmap): RoadmapGraphModel {
           kind: task.classification === "conditional" ? "conditional" as const : "primary" as const,
         }))
     ),
+    ...excludedNodes.map((node) => ({
+      id: `${outcomeId}->${node.id}`,
+      source: outcomeId,
+      target: node.id,
+      kind: "excluded" as const,
+    })),
   ];
 
   return { nodes, edges, excludedCount: roadmap.excludedTasks.length };

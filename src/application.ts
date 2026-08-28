@@ -4,6 +4,7 @@ import type {
   ContentRegistry,
   IntentProvider,
   IntentProviderResult,
+  QuestionDefinition,
   Roadmap,
   RoadmapRepository,
   TaskTransition,
@@ -57,10 +58,15 @@ function assertPrivacySafeAnswers(
       value !== null &&
       typeof value !== "string" &&
       typeof value !== "number" &&
-      typeof value !== "boolean"
+      typeof value !== "boolean" &&
+      !(
+        Array.isArray(value) &&
+        value.length <= 50 &&
+        value.every((item) => typeof item === "string" && item.length <= 500)
+      )
     ) {
       throw new PrivacyViolationError(
-        `Roadmap facts must be privacy-safe primitive values: ${key}.`,
+        `Roadmap facts must be privacy-safe primitive values or bounded option lists: ${key}.`,
       );
     }
     if (
@@ -84,6 +90,74 @@ function approvedFactKeysForOutcome(
   return new Set(outcome.questionIds.flatMap((questionId) => {
     const question = pack.questions.find((candidate) => candidate.id === questionId);
     return question ? [question.factKey] : [];
+  }));
+}
+
+function questionsByFactKeyForOutcome(
+  registry: ContentRegistry,
+  outcomeId: string,
+): ReadonlyMap<string, QuestionDefinition> {
+  const outcome = registry.getOutcome(outcomeId);
+  const pack = registry.getPackForOutcome(outcomeId);
+  if (!outcome || !pack) return new Map();
+  return new Map(outcome.questionIds.flatMap((questionId) => {
+    const question = pack.questions.find((candidate) => candidate.id === questionId);
+    return question ? [[question.factKey, question] as const] : [];
+  }));
+}
+
+function assertTypedAnswers(
+  answers: Answers | undefined,
+  questions: ReadonlyMap<string, QuestionDefinition>,
+): void {
+  if (!answers) return;
+  for (const [factKey, value] of Object.entries(answers)) {
+    if (value === null || value === undefined) continue;
+    const question = questions.get(factKey);
+    if (!question) continue;
+
+    const valid = (() => {
+      switch (question.answerType) {
+        case "boolean": return typeof value === "boolean";
+        case "single_select": return typeof value === "string" && question.options.includes(value);
+        case "multi_select": return Array.isArray(value) && value.length > 0 && value.every((item) => question.options.includes(item));
+        case "number": return typeof value === "number" && Number.isFinite(value);
+        case "date": return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
+        case "identifier":
+        case "text": return typeof value === "string" && value.trim().length > 0;
+        case "document":
+        case "unknown": return false;
+      }
+    })();
+
+    if (!valid) {
+      throw new PrivacyViolationError(
+        `The answer for ${factKey} does not match its approved ${question.answerType} format.`,
+      );
+    }
+  }
+}
+
+const explicitUnknownValues = new Set([
+  "unknown",
+  "not known",
+  "not sure",
+  "unsure",
+  "uncertain",
+]);
+
+function normalizeExplicitUnknownAnswers(
+  answers: Answers,
+  questions: ReadonlyMap<string, QuestionDefinition>,
+): Answers {
+  return Object.fromEntries(Object.entries(answers).map(([factKey, value]) => {
+    const question = questions.get(factKey);
+    if (!question) return [factKey, value];
+    const isUnknown = typeof value === "string" && explicitUnknownValues.has(value.trim().toLowerCase());
+    const isOnlyUnknownSelection = Array.isArray(value) && value.length > 0 && value.every((item) =>
+      explicitUnknownValues.has(item.trim().toLowerCase()),
+    );
+    return [factKey, isUnknown || isOnlyUnknownSelection ? null : value];
   }));
 }
 
@@ -137,6 +211,10 @@ function validateProviderResult(
     );
   }
   assertPrivacySafeAnswers(result.extractedAnswers, questionFactKeys);
+  assertTypedAnswers(
+    result.extractedAnswers,
+    questionsByFactKeyForOutcome(registry, outcome.id),
+  );
   return { outcomeId: outcome.id, answers: result.extractedAnswers };
 }
 
@@ -184,12 +262,22 @@ export function createNavigatorApplication(
           input.answers,
           approvedFactKeysForOutcome(registry, resolvedEntry.outcomeId),
         );
+        assertTypedAnswers(
+          input.answers,
+          questionsByFactKeyForOutcome(registry, resolvedEntry.outcomeId),
+        );
+      }
+      if (resolvedEntry.kind !== "browse") {
+        throw new UnsafeAiSelectionError("The entry could not be resolved to an approved outcome.");
       }
       const roadmap = buildRoadmap(
         {
           ...input,
           entry: resolvedEntry,
-          answers: { ...extractedAnswers, ...(input.answers ?? {}) },
+          answers: normalizeExplicitUnknownAnswers(
+            { ...extractedAnswers, ...(input.answers ?? {}) },
+            questionsByFactKeyForOutcome(registry, resolvedEntry.outcomeId),
+          ),
         },
         {
           registry,
@@ -208,7 +296,15 @@ export function createNavigatorApplication(
         answers,
         approvedFactKeysForOutcome(registry, roadmap.outcomeId),
       );
-      const updated = rebuildRoadmapWithAnswers(roadmap, answers, {
+      assertTypedAnswers(
+        answers,
+        questionsByFactKeyForOutcome(registry, roadmap.outcomeId),
+      );
+      const normalizedAnswers = normalizeExplicitUnknownAnswers(
+        answers,
+        questionsByFactKeyForOutcome(registry, roadmap.outcomeId),
+      );
+      const updated = rebuildRoadmapWithAnswers(roadmap, normalizedAnswers, {
         registry,
         now: clock(),
       });

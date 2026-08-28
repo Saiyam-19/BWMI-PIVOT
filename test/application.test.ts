@@ -101,7 +101,7 @@ describe("application and persistence seams", () => {
     ).rejects.toBeInstanceOf(PrivacyViolationError);
   });
 
-  it("accepts an approved boolean question even when its fact key names documents", async () => {
+  it("accepts an authored typed answer through its approved question fact key", async () => {
     const application = createNavigatorApplication({
       repository: new InMemoryRoadmapRepository(),
       idFactory: () => "roadmap-approved-document-question",
@@ -111,15 +111,56 @@ describe("application and persistence seams", () => {
       entry: { kind: "browse", outcomeId: "export-first-commercial-order" },
     });
     const approvedQuestion = roadmap.questions.find((question) =>
-      question.factKey.includes("task.ad-documents"),
+      question.answerType === "single_select" && question.options.length > 0,
     );
     expect(approvedQuestion).toBeDefined();
+    const answer = approvedQuestion!.options[0]!;
 
     await expect(application.answer(roadmap.id, {
-      [approvedQuestion!.factKey]: true,
+      [approvedQuestion!.factKey]: answer,
     })).resolves.toMatchObject({
-      answers: { [approvedQuestion!.factKey]: true },
+      answers: { [approvedQuestion!.factKey]: answer },
     });
+  });
+
+  it("rejects coercing an authored single-select question to a boolean", async () => {
+    const application = createNavigatorApplication({
+      repository: new InMemoryRoadmapRepository(),
+      idFactory: () => "roadmap-reject-coercion",
+    });
+    const roadmap = await application.start({
+      entry: { kind: "browse", outcomeId: "export-first-commercial-order" },
+    });
+    const question = roadmap.questions.find((candidate) => candidate.answerType === "single_select");
+    expect(question).toBeDefined();
+
+    await expect(application.answer(roadmap.id, {
+      [question!.factKey]: true,
+    })).rejects.toBeInstanceOf(PrivacyViolationError);
+  });
+
+  it("keeps an authored explicit Unknown answer unresolved and fail-closed", async () => {
+    const application = createNavigatorApplication({
+      repository: new InMemoryRoadmapRepository(),
+      idFactory: () => "roadmap-explicit-unknown",
+    });
+    const roadmap = await application.start({
+      entry: { kind: "browse", outcomeId: "export-first-commercial-order" },
+    });
+    const question = roadmap.questions.find((candidate) =>
+      candidate.answerType === "single_select" && candidate.options.includes("Unknown"),
+    );
+    expect(question).toBeDefined();
+
+    const updated = await application.answer(roadmap.id, {
+      [question!.factKey]: "Unknown",
+    });
+
+    expect(updated.answers[question!.factKey]).toBeNull();
+    expect(updated.questions.some((candidate) => candidate.factKey === question!.factKey)).toBe(true);
+    expect(updated.tasks
+      .filter((task) => question!.blocksTaskIds.includes(task.id))
+      .every((task) => task.actionability === "withheld")).toBe(true);
   });
 
   it("omits answers and proof confirmations from shareable output", async () => {
