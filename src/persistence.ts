@@ -1,4 +1,5 @@
-import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { chmod, mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import type {
@@ -40,11 +41,18 @@ export class FileRoadmapRepository implements RoadmapRepository {
     await mkdir(this.#directory, { recursive: true, mode: 0o700 });
     await chmod(this.#directory, 0o700);
     const path = this.#pathFor(roadmap.id);
-    await writeFile(path, `${JSON.stringify(roadmap, null, 2)}\n`, {
-      encoding: "utf8",
-      mode: 0o600,
-    });
-    await chmod(path, 0o600);
+    const temporaryPath = `${path}.${process.pid}-${randomUUID()}.tmp`;
+    try {
+      await writeFile(temporaryPath, `${JSON.stringify(roadmap, null, 2)}\n`, {
+        encoding: "utf8",
+        mode: 0o600,
+      });
+      await chmod(temporaryPath, 0o600);
+      await rename(temporaryPath, path);
+    } catch (error) {
+      await unlink(temporaryPath).catch(() => undefined);
+      throw error;
+    }
   }
 
   public async load(roadmapId: string): Promise<Roadmap | undefined> {

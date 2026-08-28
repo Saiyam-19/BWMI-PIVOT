@@ -98,6 +98,18 @@ describe("RoadmapWorkspace", () => {
     expect(screen.getByRole("heading", { name: "Submit application" })).toBeInTheDocument();
   });
 
+  it("returns focus to the task control after its detail sheet closes", async () => {
+    const user = userEvent.setup();
+    render(<RoadmapWorkspace initialRoadmap={initialRoadmap} />);
+    await user.click(screen.getByRole("tab", { name: "Linear view" }));
+    const taskButton = screen.getByRole("button", { name: /Submit application/ });
+    taskButton.focus();
+    await user.keyboard("{Enter}");
+    await user.keyboard("{Escape}");
+
+    expect(taskButton).toHaveFocus();
+  });
+
   it("uses a native keyboard-activatable task control inside each graph node", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();

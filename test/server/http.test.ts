@@ -1,11 +1,18 @@
+import { mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
   CompletionProofRequiredError,
+  FileRoadmapRepository,
   InvalidTaskTransitionError,
   PrivacyViolationError,
   RoadmapNotFoundError,
   UnknownOutcomeError,
+  createNavigatorApplication,
+  createRegistry,
 } from "../../src/index.js";
 import {
   TaskNotFoundError,
@@ -15,6 +22,7 @@ import {
   parseJsonBody,
   taskTransitionRequestSchema,
 } from "../../src/server/http.js";
+import { createAdmittedPack } from "../fixtures.js";
 
 describe("HTTP request contracts", () => {
   it("accepts only the public roadmap creation contract", () => {
@@ -95,5 +103,35 @@ describe("HTTP error translation", () => {
         message: "The server could not complete the request.",
       },
     });
+  });
+
+  it("maps a real filesystem persistence failure without leaking its local path", async () => {
+    const root = join(tmpdir(), `gon-persistence-failure-${process.pid}-${Date.now()}`);
+    await mkdir(root, { recursive: true });
+    const blockedPath = join(root, "not-a-directory");
+    await writeFile(blockedPath, "occupied");
+    const application = createNavigatorApplication({
+      registry: createRegistry([createAdmittedPack()]),
+      repository: new FileRoadmapRepository(blockedPath),
+      idFactory: () => "filesystem-failure-roadmap",
+    });
+
+    let caught: unknown;
+    try {
+      await application.start({
+        entry: { kind: "browse", outcomeId: "test-outcome" },
+        answers: { ownsItem: true },
+      });
+    } catch (error) {
+      caught = error;
+    }
+    const response = errorResponse(caught);
+    const body = JSON.stringify(await response.json());
+
+    expect(response.status).toBe(500);
+    expect(body).toContain("internal_error");
+    expect(body).not.toContain(root);
+    expect(body).not.toContain("ENOTDIR");
+    await rm(root, { recursive: true, force: true });
   });
 });

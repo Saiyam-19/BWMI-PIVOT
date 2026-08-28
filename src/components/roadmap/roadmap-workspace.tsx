@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, CheckCircle2, Map, Rows3 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { LinearRoadmap } from "@/components/roadmap/linear-roadmap";
 import { RoadmapCanvas } from "@/components/roadmap/roadmap-canvas";
@@ -21,6 +21,7 @@ interface RoadmapWorkspaceProps {
 export function RoadmapWorkspace({ initialRoadmap }: RoadmapWorkspaceProps) {
   const [roadmap, setRoadmap] = useState(initialRoadmap);
   const [selectedTaskId, setSelectedTaskId] = useState<string>();
+  const returnFocusRef = useRef<HTMLElement | null>(null);
   const graph = useMemo(
     () => layoutRoadmapGraph(projectRoadmapGraph(roadmap)),
     [roadmap],
@@ -28,7 +29,16 @@ export function RoadmapWorkspace({ initialRoadmap }: RoadmapWorkspaceProps) {
   const completed = roadmap.tasks.filter((task) => task.status === "completed").length;
   const progress = roadmap.tasks.length === 0 ? 0 : (completed / roadmap.tasks.length) * 100;
   const selectedTask = roadmap.tasks.find((task) => task.id === selectedTaskId);
-  const selectTask = useCallback((taskId: string) => setSelectedTaskId(taskId), []);
+  const selectTask = useCallback((taskId: string) => {
+    if (document.activeElement instanceof HTMLElement) {
+      returnFocusRef.current = document.activeElement;
+    }
+    setSelectedTaskId(taskId);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedTaskId) returnFocusRef.current?.focus({ preventScroll: true });
+  }, [selectedTaskId]);
 
   return (
     <div id="top" className="min-h-screen bg-[#eef1f5] text-[#172033]">

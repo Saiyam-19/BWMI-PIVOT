@@ -41,10 +41,13 @@ export class RoadmapNotFoundError extends Error {
 const forbiddenFactKey =
   /(password|passcode|secret|token|credential|document|upload|attachment|filecontents)/i;
 
-function assertPrivacySafeAnswers(answers: Answers | undefined): void {
+function assertPrivacySafeAnswers(
+  answers: Answers | undefined,
+  approvedFactKeys: ReadonlySet<string> = new Set(),
+): void {
   if (!answers) return;
   for (const [key, value] of Object.entries(answers)) {
-    if (forbiddenFactKey.test(key)) {
+    if (forbiddenFactKey.test(key) && !approvedFactKeys.has(key)) {
       throw new PrivacyViolationError(
         `Credentials and document payloads are not accepted as roadmap facts: ${key}.`,
       );
@@ -69,6 +72,19 @@ function assertPrivacySafeAnswers(answers: Answers | undefined): void {
       );
     }
   }
+}
+
+function approvedFactKeysForOutcome(
+  registry: ContentRegistry,
+  outcomeId: string,
+): ReadonlySet<string> {
+  const outcome = registry.getOutcome(outcomeId);
+  const pack = registry.getPackForOutcome(outcomeId);
+  if (!outcome || !pack) return new Set();
+  return new Set(outcome.questionIds.flatMap((questionId) => {
+    const question = pack.questions.find((candidate) => candidate.id === questionId);
+    return question ? [question.factKey] : [];
+  }));
 }
 
 function providerRequest(registry: ContentRegistry, text: string) {
@@ -120,7 +136,7 @@ function validateProviderResult(
       `The intent provider selected an unapproved registry ID: ${unsafeTaskId ?? unsafeQuestionId ?? unsafeFactKey}.`,
     );
   }
-  assertPrivacySafeAnswers(result.extractedAnswers);
+  assertPrivacySafeAnswers(result.extractedAnswers, questionFactKeys);
   return { outcomeId: outcome.id, answers: result.extractedAnswers };
 }
 
@@ -153,7 +169,6 @@ export function createNavigatorApplication(
 
   return {
     async start(input) {
-      assertPrivacySafeAnswers(input.answers);
       let resolvedEntry = input.entry;
       let extractedAnswers: Answers = {};
       if (input.entry.kind === "natural-language") {
@@ -163,6 +178,12 @@ export function createNavigatorApplication(
         const validated = validateProviderResult(registry, interpretation);
         resolvedEntry = { kind: "browse", outcomeId: validated.outcomeId };
         extractedAnswers = validated.answers;
+      }
+      if (resolvedEntry.kind === "browse") {
+        assertPrivacySafeAnswers(
+          input.answers,
+          approvedFactKeysForOutcome(registry, resolvedEntry.outcomeId),
+        );
       }
       const roadmap = buildRoadmap(
         {
@@ -181,9 +202,12 @@ export function createNavigatorApplication(
     },
 
     async answer(roadmapId, answers) {
-      assertPrivacySafeAnswers(answers);
       const roadmap = await repository.load(roadmapId);
       if (!roadmap) throw new RoadmapNotFoundError(roadmapId);
+      assertPrivacySafeAnswers(
+        answers,
+        approvedFactKeysForOutcome(registry, roadmap.outcomeId),
+      );
       const updated = rebuildRoadmapWithAnswers(roadmap, answers, {
         registry,
         now: clock(),

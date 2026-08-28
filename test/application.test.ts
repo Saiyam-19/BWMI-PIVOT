@@ -101,6 +101,27 @@ describe("application and persistence seams", () => {
     ).rejects.toBeInstanceOf(PrivacyViolationError);
   });
 
+  it("accepts an approved boolean question even when its fact key names documents", async () => {
+    const application = createNavigatorApplication({
+      repository: new InMemoryRoadmapRepository(),
+      idFactory: () => "roadmap-approved-document-question",
+      clock: () => new Date("2026-08-27T23:30:00.000Z"),
+    });
+    const roadmap = await application.start({
+      entry: { kind: "browse", outcomeId: "export-first-commercial-order" },
+    });
+    const approvedQuestion = roadmap.questions.find((question) =>
+      question.factKey.includes("task.ad-documents"),
+    );
+    expect(approvedQuestion).toBeDefined();
+
+    await expect(application.answer(roadmap.id, {
+      [approvedQuestion!.factKey]: true,
+    })).resolves.toMatchObject({
+      answers: { [approvedQuestion!.factKey]: true },
+    });
+  });
+
   it("omits answers and proof confirmations from shareable output", async () => {
     const application = createNavigatorApplication({
       registry,
@@ -139,6 +160,33 @@ describe("application and persistence seams", () => {
 
     expect(stored.id).toBe(roadmap.id);
     expect(mode).toBe(0o600);
+    await rm(directory, { recursive: true, force: true });
+  });
+
+  it("never exposes partially written JSON during concurrent saves and loads", async () => {
+    const directory = join(tmpdir(), `gon-atomic-store-${process.pid}-${Date.now()}`);
+    const repository = new FileRoadmapRepository(directory);
+    const application = createNavigatorApplication({
+      registry,
+      repository,
+      idFactory: () => "roadmap-atomic",
+    });
+    const roadmap = await application.start({
+      entry: { kind: "browse", outcomeId: "test-outcome" },
+      answers: { ownsItem: true },
+    });
+    const largeRoadmap = {
+      ...roadmap,
+      answers: { ...roadmap.answers, largeFact: "x".repeat(8_000_000) },
+    };
+
+    const save = repository.save(largeRoadmap);
+    const reads = Promise.all(Array.from({ length: 200 }, async () => {
+      const loaded = await repository.load(roadmap.id);
+      expect(loaded?.id).toBe(roadmap.id);
+    }));
+    await Promise.all([save, reads]);
+
     await rm(directory, { recursive: true, force: true });
   });
 });
