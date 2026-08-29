@@ -17,7 +17,38 @@ test("roadmap matches the authored long-scroll grammar on desktop and mobile", a
     await expect(connector).toHaveAttribute("data-edge-source", edge.source);
     await expect(connector).toHaveAttribute("data-edge-target", edge.target);
     await expect(connector).toBeVisible();
-    await expect(connector.locator("svg path")).toBeVisible();
+    await expect(connector).toHaveJSProperty("tagName", "path");
+    const geometry = await connector.evaluate((path, projectedEdge) => {
+      const connectorPath = path as SVGPathElement;
+      const frame = connectorPath.closest<HTMLElement>("[data-roadmap-connector-frame]")!;
+      const source = frame.querySelector<HTMLElement>(`[data-roadmap-node-id="${CSS.escape(projectedEdge.source)}"]`)!;
+      const target = frame.querySelector<HTMLElement>(`[data-roadmap-node-id="${CSS.escape(projectedEdge.target)}"]`)!;
+      const frameRect = frame.getBoundingClientRect();
+      const sourceRect = source.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      const start = connectorPath.getPointAtLength(0);
+      const end = connectorPath.getPointAtLength(connectorPath.getTotalLength());
+      const relative = (rect: DOMRect) => ({
+        left: rect.left - frameRect.left,
+        right: rect.right - frameRect.left,
+        top: rect.top - frameRect.top,
+        bottom: rect.bottom - frameRect.top,
+      });
+      const distanceToBoundary = (point: DOMPoint, rect: ReturnType<typeof relative>) => Math.min(
+        Math.abs(point.x - rect.left),
+        Math.abs(point.x - rect.right),
+        Math.abs(point.y - rect.top),
+        Math.abs(point.y - rect.bottom),
+      );
+      return {
+        startDistance: distanceToBoundary(start, relative(sourceRect)),
+        endDistance: distanceToBoundary(end, relative(targetRect)),
+        insideDestination: Boolean(connectorPath.closest("[data-task-id]")),
+      };
+    }, edge);
+    expect(geometry.startDistance).toBeLessThanOrEqual(2);
+    expect(geometry.endDistance).toBeLessThanOrEqual(2);
+    expect(geometry.insideDestination).toBe(false);
   }
   const dependentTask = roadmap.tasks.find((task) => task.dependencies.length > 0);
   expect(dependentTask).toBeDefined();

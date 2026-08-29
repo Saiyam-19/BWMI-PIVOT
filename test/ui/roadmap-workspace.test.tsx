@@ -253,4 +253,38 @@ describe("RoadmapWorkspace", () => {
     await user.click(screen.getByRole("button", { name: /Personalize this roadmap/i }));
     expect(screen.getByText("Informational — manual review required")).toBeInTheDocument();
   });
+
+  it("counts only explicit unknown answers in the unknown affected-branch total", () => {
+    const mixedRoadmap = {
+      ...initialRoadmap,
+      status: "needs-information" as const,
+      answers: { unknown_fact: null, manual_fact: "Recorded for review" },
+      questions: [{
+        id: "q-unknown",
+        factKey: "unknown_fact",
+        prompt: "Is the first branch known?",
+        reason: "It remains unknown.",
+        answerType: "boolean",
+        options: ["Yes", "No"],
+        resolutionMode: "safe-effects",
+        taskEffects: [{ taskId: "second", when: true, effect: "resolve-gate" }],
+        blocksTaskIds: ["second"],
+      }, {
+        id: "q-manual-recorded",
+        factKey: "manual_fact",
+        prompt: "Describe the separate manual branch.",
+        reason: "It needs review, but is not unknown.",
+        answerType: "text",
+        options: [],
+        resolutionMode: "manual-review",
+        blocksTaskIds: ["first"],
+      }],
+    } as unknown as Roadmap;
+
+    render(<RoadmapWorkspace initialRoadmap={mixedRoadmap} />);
+    expect(screen.getByText("1 left unknown · 1 affected branch still needs information")).toBeInTheDocument();
+    expect(screen.queryByText("1 left unknown · 2 affected branches still need information")).not.toBeInTheDocument();
+    expect(screen.getByText("1 saved answer still needs manual review")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Review saved answers" })).toBeInTheDocument();
+  });
 });

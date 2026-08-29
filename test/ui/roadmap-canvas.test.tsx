@@ -2,7 +2,7 @@
 
 import "@testing-library/jest-dom/vitest";
 
-import { cleanup, render, within } from "@testing-library/react";
+import { cleanup, render, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { RoadmapCanvas } from "../../src/components/roadmap/roadmap-canvas.js";
@@ -74,18 +74,26 @@ describe("RoadmapCanvas", () => {
     expect(within(child!).getByText(/After Establish identity; Classify the product/i)).toBeInTheDocument();
   });
 
-  it("renders one traceable visible connector for every projected graph edge", () => {
+  it("renders one traceable geometric connector outside the tiles for every projected edge", async () => {
     const model = projectRoadmapGraph(roadmap);
     const { container } = render(
       <RoadmapCanvas model={model} selectedTaskId={null} onSelectTask={vi.fn()} />,
     );
 
+    await waitFor(() => expect(container.querySelectorAll("[data-roadmap-edge]")).toHaveLength(model.edges.length));
     for (const edge of model.edges) {
       const connectors = container.querySelectorAll(
         `[data-roadmap-edge="${edge.id}"][data-edge-source="${edge.source}"][data-edge-target="${edge.target}"]`,
       );
       expect(connectors, edge.id).toHaveLength(1);
-      expect(connectors[0]?.querySelector("svg path"), edge.id).toBeInTheDocument();
+      expect(connectors[0]?.tagName.toLowerCase(), edge.id).toBe("path");
+      expect(connectors[0]?.closest("[data-roadmap-connectors]"), edge.id).toBeInTheDocument();
+      expect(connectors[0]?.closest("[data-task-id]"), edge.id).toBeNull();
+      expect(connectors[0]).toHaveAttribute("d", expect.stringMatching(/^M\s*[\d.]+\s+[\d.]+\s+C/));
+    }
+
+    for (const node of model.nodes) {
+      expect(container.querySelector(`[data-roadmap-node-id="${node.id}"]`), node.id).toBeInTheDocument();
     }
   });
 

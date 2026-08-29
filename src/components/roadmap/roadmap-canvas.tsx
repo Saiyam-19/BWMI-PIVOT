@@ -13,7 +13,7 @@ import {
   LockKeyhole,
   type LucideIcon,
 } from "lucide-react";
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 
 import {
   ROADMAP_STATUS_CLASSES,
@@ -68,15 +68,11 @@ function roadmapStages(model: RoadmapGraphModel): RoadmapGraphNode[][] {
 function TaskTile({
   node,
   dependencies,
-  incomingEdges,
-  nodesById,
   selected,
   onSelect,
 }: {
   node: RoadmapGraphNode;
   dependencies: readonly RoadmapGraphNode[];
-  incomingEdges: readonly RoadmapGraphEdge[];
-  nodesById: ReadonlyMap<string, RoadmapGraphNode>;
   selected: boolean;
   onSelect: () => void;
 }) {
@@ -92,6 +88,7 @@ function TaskTile({
       type="button"
       onClick={onSelect}
       data-task-id={node.id}
+      data-roadmap-node-id={node.id}
       data-depends-on={dependencies.map((dependency) => dependency.id).join(" ")}
       data-status={status}
       data-state-tone={status}
@@ -114,50 +111,131 @@ function TaskTile({
         <CornerDownRight className="mt-0.5 size-3 shrink-0 text-blue-700" aria-hidden="true" />
         <span>{dependencyLabel}</span>
       </span>
-      <span className="mt-2 grid gap-1.5 border-t border-slate-900/20 pt-2">
-        {incomingEdges.map((edge) => (
-          <RoadmapEdgeConnector key={edge.id} edge={edge} source={nodesById.get(edge.source)} />
-        ))}
-      </span>
     </button>
   );
 }
 
-function RoadmapEdgeConnector({
-  edge,
-  source,
-}: {
+type ConnectorPath = Readonly<{
   edge: RoadmapGraphEdge;
-  source: RoadmapGraphNode | undefined;
-}) {
-  const sourceLabel = source?.kind === "outcome"
-    ? "Selected outcome"
-    : source?.title ?? edge.source;
+  d: string;
+}>;
+type ConnectorGeometry = Readonly<{
+  width: number;
+  height: number;
+  paths: readonly ConnectorPath[];
+}>;
+
+function boundaryPath(source: DOMRect, target: DOMRect, frame: DOMRect): string {
+  const from = {
+    left: source.left - frame.left,
+    right: source.right - frame.left,
+    top: source.top - frame.top,
+    bottom: source.bottom - frame.top,
+    centerX: source.left - frame.left + source.width / 2,
+    centerY: source.top - frame.top + source.height / 2,
+  };
+  const to = {
+    left: target.left - frame.left,
+    right: target.right - frame.left,
+    top: target.top - frame.top,
+    bottom: target.bottom - frame.top,
+    centerX: target.left - frame.left + target.width / 2,
+    centerY: target.top - frame.top + target.height / 2,
+  };
+  const lateral = Math.abs(to.centerX - from.centerX) > 80;
+
+  if (lateral) {
+    const travelsRight = to.centerX > from.centerX;
+    const startX = travelsRight ? from.right : from.left;
+    const endX = travelsRight ? to.left : to.right;
+    const middleX = (startX + endX) / 2;
+    return `M ${startX} ${from.centerY} C ${middleX} ${from.centerY}, ${middleX} ${to.centerY}, ${endX} ${to.centerY}`;
+  }
+
+  const travelsDown = to.centerY >= from.centerY;
+  const startY = travelsDown ? from.bottom : from.top;
+  const endY = travelsDown ? to.top : to.bottom;
+  const middleY = (startY + endY) / 2;
+  return `M ${from.centerX} ${startY} C ${from.centerX} ${middleY}, ${to.centerX} ${middleY}, ${to.centerX} ${endY}`;
+}
+
+function useConnectorGeometry(
+  {
+    edges,
+    frameRef,
+  }: Readonly<{
+  edges: readonly RoadmapGraphEdge[];
+  frameRef: RefObject<HTMLDivElement | null>;
+}>): ConnectorGeometry {
+  const [geometry, setGeometry] = useState<ConnectorGeometry>({
+    width: 1,
+    height: 1,
+    paths: [],
+  });
+
+  useLayoutEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+
+    const measure = () => {
+      const frameRect = frame.getBoundingClientRect();
+      const nodes = [...frame.querySelectorAll<HTMLElement>("[data-roadmap-node-id]")];
+      const paths = edges.flatMap((edge) => {
+        const source = nodes.find((node) => node.dataset.roadmapNodeId === edge.source);
+        const target = nodes.find((node) => node.dataset.roadmapNodeId === edge.target);
+        return source && target
+          ? [{ edge, d: boundaryPath(source.getBoundingClientRect(), target.getBoundingClientRect(), frameRect) }]
+          : [];
+      });
+      setGeometry({
+        width: Math.max(frame.clientWidth, 1),
+        height: Math.max(frame.scrollHeight, 1),
+        paths,
+      });
+    };
+
+    measure();
+    const animationFrame = requestAnimationFrame(measure);
+    const observer = typeof ResizeObserver === "undefined" ? undefined : new ResizeObserver(measure);
+    observer?.observe(frame);
+    frame.querySelectorAll<HTMLElement>("[data-roadmap-node-id]").forEach((node) => observer?.observe(node));
+    window.addEventListener("resize", measure);
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      observer?.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [edges, frameRef]);
+
+  return geometry;
+}
+
+function RoadmapConnectors({ geometry }: { geometry: ConnectorGeometry }) {
   return (
-    <span
-      data-roadmap-edge={edge.id}
-      data-edge-source={edge.source}
-      data-edge-target={edge.target}
-      className="inline-flex max-w-full min-w-0 items-center gap-2 text-[10px] font-semibold leading-4 text-slate-700"
-      aria-label={`Dependency connector from ${sourceLabel} to this branch`}
+    <svg
+      data-roadmap-connectors="true"
+      aria-hidden="true"
+      viewBox={`0 0 ${geometry.width} ${geometry.height}`}
+      preserveAspectRatio="none"
+      className="pointer-events-none absolute inset-0 z-[5] h-full w-full overflow-hidden text-blue-700"
+      fill="none"
     >
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 42 12"
-        className="h-3 w-10 shrink-0 overflow-visible text-blue-700"
-        fill="none"
-      >
+      {geometry.paths.map(({ edge, d }) => (
         <path
-          d="M1 6 H35 M31 2 L36 6 L31 10"
+          key={edge.id}
+          data-roadmap-edge={edge.id}
+          data-edge-source={edge.source}
+          data-edge-target={edge.target}
+          d={d}
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth={edge.kind === "outcome" ? 3 : 2}
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeDasharray={edge.kind === "conditional" || edge.kind === "excluded" ? "3 3" : undefined}
+          strokeDasharray={edge.kind === "conditional" || edge.kind === "excluded" ? "5 5" : undefined}
+          vectorEffect="non-scaling-stroke"
         />
-      </svg>
-      <span className="min-w-0 flex-1 truncate">From {sourceLabel}</span>
-    </span>
+      ))}
+    </svg>
   );
 }
 
@@ -175,16 +253,12 @@ const statusIcons: Readonly<Record<RoadmapNodeStatus, LucideIcon>> = {
 function TaskBranch({
   nodes,
   dependenciesByTaskId,
-  incomingEdgesByTargetId,
-  nodesById,
   side,
   selectedTaskId,
   onSelectTask,
 }: {
   nodes: RoadmapGraphNode[];
   dependenciesByTaskId: ReadonlyMap<string, readonly RoadmapGraphNode[]>;
-  incomingEdgesByTargetId: ReadonlyMap<string, readonly RoadmapGraphEdge[]>;
-  nodesById: ReadonlyMap<string, RoadmapGraphNode>;
   side: "left" | "right";
   selectedTaskId: string | null;
   onSelectTask: (taskId: string) => void;
@@ -196,20 +270,11 @@ function TaskBranch({
         side === "left" ? "md:pr-12" : "md:pl-12",
       )}
     >
-      <span
-        aria-hidden="true"
-        className={cn(
-          "absolute top-7 hidden h-px w-12 border-t-2 border-dotted border-slate-700 md:block",
-          side === "left" ? "right-0" : "left-0",
-        )}
-      />
       {nodes.map((node) => (
         <TaskTile
           key={node.id}
           node={node}
           dependencies={dependenciesByTaskId.get(node.id) ?? []}
-          incomingEdges={incomingEdgesByTargetId.get(node.id) ?? []}
-          nodesById={nodesById}
           selected={selectedTaskId === node.id}
           onSelect={() => onSelectTask(node.id)}
         />
@@ -219,6 +284,8 @@ function TaskBranch({
 }
 
 export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCanvasProps) {
+  const connectorFrameRef = useRef<HTMLDivElement>(null);
+  const connectorGeometry = useConnectorGeometry({ edges: model.edges, frameRef: connectorFrameRef });
   const stages = useMemo(() => roadmapStages(model), [model]);
   const dependenciesByTaskId = useMemo(() => {
     const tasksById = new Map(
@@ -232,17 +299,6 @@ export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCa
     }
     return dependencies;
   }, [model]);
-  const nodesById = useMemo(
-    () => new Map(model.nodes.map((node) => [node.id, node])),
-    [model.nodes],
-  );
-  const incomingEdgesByTargetId = useMemo(() => {
-    const incoming = new Map<string, RoadmapGraphEdge[]>();
-    for (const edge of model.edges) {
-      incoming.set(edge.target, [...(incoming.get(edge.target) ?? []), edge]);
-    }
-    return incoming;
-  }, [model.edges]);
   const outcome = model.nodes.find((node) => node.kind === "outcome");
   const state = model.nodes.find((node) => node.kind === "state");
   const excluded = model.nodes.filter((node) => node.kind === "excluded");
@@ -267,13 +323,17 @@ export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCa
           </div>
         </div>
 
-        <div className="relative pb-12">
+        <div ref={connectorFrameRef} data-roadmap-connector-frame="true" className="relative pb-12">
+          <RoadmapConnectors geometry={connectorGeometry} />
           <span
             aria-hidden="true"
             className="absolute bottom-0 left-5 top-6 w-1 rounded-full bg-blue-700 md:left-1/2 md:-translate-x-1/2"
           />
 
-          <div className="relative z-10 mx-auto mb-16 ml-12 max-w-xl rounded-sm border-2 border-slate-950 bg-white px-5 py-4 text-center shadow-[4px_4px_0_#0f172a] md:ml-auto">
+          <div
+            data-roadmap-node-id={outcome?.id}
+            className="relative z-10 mx-auto mb-16 ml-12 max-w-xl rounded-sm border-2 border-slate-950 bg-white px-5 py-4 text-center shadow-[4px_4px_0_#0f172a] md:ml-auto"
+          >
             <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-blue-700">Your outcome</p>
             <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950 sm:text-2xl">
               {outcome?.title ?? "Government outcome roadmap"}
@@ -293,8 +353,6 @@ export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCa
                       <TaskBranch
                         nodes={nodes}
                         dependenciesByTaskId={dependenciesByTaskId}
-                        incomingEdgesByTargetId={incomingEdgesByTargetId}
-                        nodesById={nodesById}
                         side={side}
                         selectedTaskId={selectedTaskId}
                         onSelectTask={onSelectTask}
@@ -315,17 +373,15 @@ export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCa
               })}
             </ol>
           ) : state ? (
-            <div className="relative z-10 ml-12 rounded-sm border-2 border-slate-950 bg-[#fff7dc] p-5 shadow-[3px_3px_0_#0f172a] md:mx-auto md:max-w-xl">
+            <div
+              data-roadmap-node-id={state.id}
+              className="relative z-10 ml-12 rounded-sm border-2 border-slate-950 bg-[#fff7dc] p-5 shadow-[3px_3px_0_#0f172a] md:mx-auto md:max-w-xl"
+            >
               <div className="flex gap-3">
                 <CircleAlert className="mt-0.5 size-5 shrink-0 text-blue-700" aria-hidden="true" />
                 <div>
                   <h3 className="font-black text-slate-950">{state.title}</h3>
                   {state.summary ? <p className="mt-1 text-sm leading-6 text-slate-700">{state.summary}</p> : null}
-                  <span className="mt-3 block">
-                    {(incomingEdgesByTargetId.get(state.id) ?? []).map((edge) => (
-                      <RoadmapEdgeConnector key={edge.id} edge={edge} source={nodesById.get(edge.source)} />
-                    ))}
-                  </span>
                 </div>
               </div>
             </div>
@@ -342,15 +398,11 @@ export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCa
                   <li
                     key={node.id}
                     data-excluded-task-id={node.id.replace(/^excluded:/, "")}
+                    data-roadmap-node-id={node.id}
                     className="rounded-sm border border-slate-300 bg-white px-3 py-2"
                   >
                     <span className="block text-sm font-bold text-slate-800">{node.title}</span>
                     {node.summary ? <span className="mt-1 block text-xs leading-5 text-slate-600">{node.summary}</span> : null}
-                    <span className="mt-2 grid gap-1">
-                      {(incomingEdgesByTargetId.get(node.id) ?? []).map((edge) => (
-                        <RoadmapEdgeConnector key={edge.id} edge={edge} source={nodesById.get(edge.source)} />
-                      ))}
-                    </span>
                   </li>
                 ))}
               </ul>

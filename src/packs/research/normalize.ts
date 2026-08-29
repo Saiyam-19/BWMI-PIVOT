@@ -522,20 +522,146 @@ interface ReviewedQuestionEffect {
   readonly effect: QuestionTaskEffect["effect"];
 }
 
+const reviewedEffects = (
+  when: boolean | string,
+  resolve: readonly string[] = [],
+  exclude: readonly string[] = [],
+): readonly ReviewedQuestionEffect[] => [
+  ...resolve.map((taskId) => ({ taskId, when, effect: "resolve-gate" as const })),
+  ...exclude.map((taskId) => ({ taskId, when, effect: "exclude" as const })),
+];
+
+const reviewedResolution = (
+  values: readonly (boolean | string)[],
+  taskIds: readonly string[],
+): readonly ReviewedQuestionEffect[] => values.flatMap((when) => reviewedEffects(when, taskIds));
+
 /**
  * Human-reviewed, mechanically exact mappings from structured pack fields.
  * Deliberately keyed by pack/question/task IDs so prose blocking logic can never
  * become executable by accident.
  */
 const reviewedQuestionEffects: Readonly<Record<string, readonly ReviewedQuestionEffect[]>> = {
+  "research.incorporate-company-first-hire:q.entity": reviewedResolution(
+    ["One Person Company", "Private company", "Public company", "Section 8 company", "Producer company"],
+    ["t01.qualify", "t03.name", "t04.prepare", "t05.incorporate", "t10.governance", "t21.annual"],
+  ),
+  "research.incorporate-company-first-hire:q.name-route": reviewedResolution(
+    ["Separate Part A", "Integrated Part A and Part B"],
+    ["t03.name", "t05.incorporate"],
+  ),
+  "research.incorporate-company-first-hire:q.hazard": reviewedResolution(
+    [true, false],
+    ["t19.esi", "t22.monitor"],
+  ),
   "research.export-first-commercial-order:q.rcmc-benefit": [
     { taskId: "task.rcmc", when: true, effect: "resolve-gate" },
     { taskId: "task.rcmc", when: false, effect: "exclude" },
+  ],
+  "research.export-first-commercial-order:q.customs-channel": [
+    ...reviewedEffects(
+      "Exporter ICEGATE/RES filing",
+      ["task.icegate-registration", "task.shipping-bill", "task.customs-leo"],
+    ),
+    ...reviewedEffects(
+      "Licensed customs broker",
+      ["task.shipping-bill", "task.customs-leo"],
+      ["task.icegate-registration"],
+    ),
+    ...reviewedEffects(
+      "Customs Service Centre",
+      ["task.shipping-bill", "task.customs-leo"],
+      ["task.icegate-registration"],
+    ),
+  ],
+  "research.central-procurement-first-bid:q04.procurement-type": reviewedResolution(
+    ["goods", "non-consultancy services", "consultancy services", "works", "mixed"],
+    ["t04.select-channel", "t04.assess-bid-eligibility", "t04.prepare-bid"],
+  ),
+  "research.central-procurement-first-bid:q04.submission-channel": [
+    ...reviewedEffects(
+      "GeM",
+      ["t04.select-channel", "t04.enrol-gem", "t04.submit-freeze"],
+      ["t04.enrol-cppp"],
+    ),
+    ...reviewedEffects(
+      "NIC eProcure/CPPP",
+      ["t04.select-channel", "t04.enrol-cppp", "t04.submit-freeze"],
+      ["t04.enrol-gem"],
+    ),
+    ...reviewedEffects(
+      "other named e-procurement portal",
+      ["t04.select-channel", "t04.submit-freeze"],
+      ["t04.enrol-gem", "t04.enrol-cppp"],
+    ),
+    ...reviewedEffects(
+      "expressly permitted offline or hybrid exception",
+      ["t04.select-channel", "t04.submit-freeze"],
+      ["t04.enrol-gem", "t04.enrol-cppp"],
+    ),
+  ],
+  "research.post-death-regulated-assets:q.bank-status": [
+    ...reviewedEffects("active or known account", ["t.bank-claim", "t.bank-grievance"], ["t.udgam-search"]),
+    ...reviewedEffects("UDGAM match", ["t.udgam-search", "t.bank-claim", "t.bank-grievance"]),
+    ...reviewedEffects("no bank asset", [], ["t.udgam-search", "t.bank-claim", "t.bank-grievance"]),
+  ],
+  "research.post-death-regulated-assets:q.securities-mode": [
+    ...reviewedEffects(
+      "demat",
+      ["t.securities-locate", "t.demat-claim"],
+      ["t.physical-securities-claim", "t.mf-claim", "t.iepf-locate", "t.iepf-claim"],
+    ),
+    ...reviewedEffects(
+      "physical listed securities",
+      ["t.securities-locate", "t.physical-securities-claim"],
+      ["t.demat-claim", "t.mf-claim", "t.iepf-locate", "t.iepf-claim"],
+    ),
+    ...reviewedEffects(
+      "mutual-fund statement of account",
+      ["t.securities-locate", "t.mf-claim"],
+      ["t.demat-claim", "t.physical-securities-claim", "t.iepf-locate", "t.iepf-claim"],
+    ),
+    ...reviewedEffects(
+      "IEPF",
+      ["t.securities-locate", "t.iepf-locate", "t.iepf-claim"],
+      ["t.demat-claim", "t.physical-securities-claim", "t.mf-claim"],
+    ),
+  ],
+  "research.reusable-foundations:q.pan.applicant-type": [
+    ...reviewedResolution(
+      ["Indian individual", "Indian non-individual", "Foreign individual", "Foreign entity"],
+      ["t.pan.obtain-maintain", "t.tan.obtain-maintain", "t.gst.register", "t.iec.obtain", "t.udyam.register"],
+    ),
+    ...reviewedEffects(
+      "Existing PAN only",
+      ["t.tan.obtain-maintain", "t.gst.register", "t.iec.obtain", "t.udyam.register"],
+      ["t.pan.obtain-maintain"],
+    ),
   ],
   "research.reusable-foundations:q.tan.deductor-collector": [
     { taskId: "t.tan.obtain-maintain", when: "Yes", effect: "resolve-gate" },
     { taskId: "t.tan.obtain-maintain", when: "No", effect: "exclude" },
     { taskId: "t.tan.obtain-maintain", when: "Exempt PAN-instead case confirmed", effect: "exclude" },
+  ],
+  "research.reusable-foundations:q.trade.iec-needed": [
+    ...reviewedResolution(
+      ["Goods import/export", "Services/technology with FTP benefit"],
+      ["t.iec.obtain", "t.iec.annual-confirm", "t.icegate.register", "t.icegate.map-gstin"],
+    ),
+    ...reviewedEffects(
+      "No",
+      [],
+      ["t.iec.obtain", "t.iec.annual-confirm", "t.icegate.register", "t.icegate.map-gstin"],
+    ),
+  ],
+  "research.reusable-foundations:q.epfo.member-state": [
+    ...reviewedEffects("Existing active UAN", [], ["t.epfo.member-uan"]),
+    ...reviewedResolution(["Existing inactive UAN", "No UAN"], ["t.epfo.member-uan"]),
+  ],
+  "research.reusable-foundations:q.udyam.eligibility": [
+    ...reviewedResolution(["Eligible and wants registration"], ["t.udyam.register", "t.udyam.maintain"]),
+    ...reviewedEffects("Already registered", ["t.udyam.maintain"], ["t.udyam.register"]),
+    ...reviewedEffects("Not applicable", [], ["t.udyam.register", "t.udyam.maintain"]),
   ],
 };
 

@@ -179,9 +179,9 @@ export function RoadmapPersonalization({
     () => unresolvedAnsweredQuestions.filter((candidate) => roadmap.answers[candidate.factKey] === null),
     [roadmap.answers, unresolvedAnsweredQuestions],
   );
-  const manualReviewQuestions = useMemo(
+  const reviewRequiredQuestions = useMemo(
     () => unresolvedAnsweredQuestions.filter((candidate) =>
-      roadmap.answers[candidate.factKey] !== null && candidate.resolutionMode === "manual-review",
+      roadmap.answers[candidate.factKey] !== null,
     ),
     [roadmap.answers, unresolvedAnsweredQuestions],
   );
@@ -241,11 +241,14 @@ export function RoadmapPersonalization({
   };
 
   const affectedUnknownBranchCount = new Set(
-    unresolvedAnsweredQuestions.flatMap((candidate) => candidate.blocksTaskIds),
+    unknownQuestions.flatMap((candidate) => candidate.blocksTaskIds),
   ).size;
   const countLabel = `${pendingQuestions.length} ${pendingQuestions.length === 1 ? "question" : "questions"} left to answer`;
   const unresolvedLabel = unknownQuestions.length > 0
     ? `${unknownQuestions.length} left unknown · ${affectedUnknownBranchCount} affected ${affectedUnknownBranchCount === 1 ? "branch still needs" : "branches still need"} information`
+    : undefined;
+  const manualReviewLabel = reviewRequiredQuestions.length > 0
+    ? `${reviewRequiredQuestions.length} saved ${reviewRequiredQuestions.length === 1 ? "answer still needs" : "answers still need"} manual review`
     : undefined;
 
   const reviewQuestion = (candidate: RoadmapQuestion) => {
@@ -277,6 +280,19 @@ export function RoadmapPersonalization({
             className="min-h-11 text-[#173f7a]"
           >
             Review unknown answers
+          </Button>
+        ) : null}
+        {manualReviewLabel ? (
+          <span className="text-xs font-semibold text-blue-800" aria-live="polite">{manualReviewLabel}</span>
+        ) : null}
+        {reviewRequiredQuestions.length > 0 ? (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => reviewQuestion(reviewRequiredQuestions[0]!)}
+            className="min-h-11 text-blue-800"
+          >
+            Review saved answers
           </Button>
         ) : null}
       </div>
@@ -372,9 +388,9 @@ export function RoadmapPersonalization({
                     {roadmap.answers[candidate.factKey] === null ? "Review unknown" : "Review saved answer"}: {candidate.prompt}
                   </Button>
                 ))}
-                {manualReviewQuestions.length > 0 ? (
+                {reviewRequiredQuestions.length > 0 ? (
                   <p className="text-xs font-semibold text-blue-800">
-                    {manualReviewQuestions.length} saved {manualReviewQuestions.length === 1 ? "answer still needs" : "answers still need"} manual review.
+                    {reviewRequiredQuestions.length} saved {reviewRequiredQuestions.length === 1 ? "answer still needs" : "answers still need"} manual review.
                   </p>
                 ) : null}
               </div>

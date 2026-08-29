@@ -34,6 +34,72 @@ function answersFor(outcomeId: string): Readonly<Record<string, AnswerValue>> {
 }
 
 describe("admitted outcome portfolio", () => {
+  it("audits every authored question as reviewed executable effects or explicit manual review", () => {
+    const executableOutcomeIds = new Set<string>();
+    let executableQuestionCount = 0;
+
+    for (const outcome of builtInRegistry.listOutcomes()) {
+      const pack = builtInRegistry.getPackForOutcome(outcome.id)!;
+      const initial = buildRoadmap(
+        { entry: { kind: "browse", outcomeId: outcome.id } },
+        { now: verificationDate },
+      );
+
+      for (const questionId of outcome.questionIds) {
+        const definition = pack.questions.find((question) => question.id === questionId)!;
+        expect(["safe-effects", "manual-review"], definition.id).toContain(definition.resolutionMode);
+
+        if (definition.resolutionMode === "manual-review") {
+          expect(definition.taskEffects, definition.id).toBeUndefined();
+          continue;
+        }
+
+        executableQuestionCount += 1;
+        executableOutcomeIds.add(outcome.id);
+        expect(definition.taskEffects?.length, definition.id).toBeGreaterThan(0);
+        const initialQuestion = initial.questions.find((question) => question.id === definition.id);
+        expect(initialQuestion, definition.id).toBeDefined();
+
+        for (const effect of definition.taskEffects ?? []) {
+          if (definition.answerType === "boolean") {
+            expect(typeof effect.when, definition.id).toBe("boolean");
+          } else {
+            expect(definition.answerType, definition.id).toBe("single_select");
+            expect(definition.options, definition.id).toContain(effect.when);
+          }
+
+          const updated = buildRoadmap(
+            {
+              entry: { kind: "browse", outcomeId: outcome.id },
+              answers: { [definition.factKey]: effect.when },
+            },
+            { now: verificationDate },
+          );
+          if (effect.effect === "exclude") {
+            expect(updated.tasks.some((task) => task.id === effect.taskId), definition.id).toBe(false);
+            expect(updated.excludedTasks.some((task) => task.id === effect.taskId), definition.id).toBe(true);
+          } else {
+            const task = updated.tasks.find((candidate) => candidate.id === effect.taskId);
+            expect(task, definition.id).toBeDefined();
+            expect(task?.missingAnswers, definition.id).not.toContain(definition.factKey);
+          }
+        }
+
+        const unknown = buildRoadmap(
+          {
+            entry: { kind: "browse", outcomeId: outcome.id },
+            answers: { [definition.factKey]: null },
+          },
+          { now: verificationDate },
+        );
+        expect(unknown.questions.some((question) => question.id === definition.id), definition.id).toBe(true);
+      }
+    }
+
+    expect(executableQuestionCount).toBeGreaterThan(2);
+    expect(executableOutcomeIds.size).toBeGreaterThan(2);
+  });
+
   it("builds all seven outcomes with consistent questions and real tasks", () => {
     const outcomes = builtInRegistry.listOutcomes();
     expect(outcomes).toHaveLength(7);
@@ -90,7 +156,9 @@ describe("admitted outcome portfolio", () => {
       const actionable = roadmap.tasks.filter((task) => task.actionability === "actionable");
       admittedActionableTasks += actionable.length;
 
-      expect(roadmap.questions.every((question) => question.resolutionMode === "manual-review"), outcome.id).toBe(true);
+      expect(roadmap.questions.every((question) =>
+        question.resolutionMode === "manual-review" || question.resolutionMode === "safe-effects",
+      ), outcome.id).toBe(true);
       for (const question of roadmap.questions) {
         expect(question.blocksTaskIds.length, `${outcome.id}:${question.id}`).toBeGreaterThan(0);
         for (const taskId of question.blocksTaskIds) {
