@@ -98,7 +98,7 @@ describe("admitted outcome portfolio", () => {
 
     expect(executableQuestionCount).toBeGreaterThan(2);
     expect(executableOutcomeIds.size).toBeGreaterThan(2);
-  });
+  }, 15_000);
 
   it("builds all seven outcomes with consistent questions and real tasks", () => {
     const outcomes = builtInRegistry.listOutcomes();

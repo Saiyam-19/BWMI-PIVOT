@@ -125,7 +125,13 @@ type ConnectorGeometry = Readonly<{
   paths: readonly ConnectorPath[];
 }>;
 
-function boundaryPath(source: DOMRect, target: DOMRect, frame: DOMRect): string {
+function boundaryPath(
+  source: DOMRect,
+  target: DOMRect,
+  frame: DOMRect,
+  spineX: number,
+  laneIndex: number,
+): string {
   const from = {
     left: source.left - frame.left,
     right: source.right - frame.left,
@@ -142,21 +148,29 @@ function boundaryPath(source: DOMRect, target: DOMRect, frame: DOMRect): string 
     centerX: target.left - frame.left + target.width / 2,
     centerY: target.top - frame.top + target.height / 2,
   };
-  const lateral = Math.abs(to.centerX - from.centerX) > 80;
-
-  if (lateral) {
-    const travelsRight = to.centerX > from.centerX;
-    const startX = travelsRight ? from.right : from.left;
-    const endX = travelsRight ? to.left : to.right;
-    const middleX = (startX + endX) / 2;
-    return `M ${startX} ${from.centerY} C ${middleX} ${from.centerY}, ${middleX} ${to.centerY}, ${endX} ${to.centerY}`;
-  }
-
+  const laneOffset = ((laneIndex % 11) - 5) * 2.5;
+  const hubX = spineX + laneOffset;
   const travelsDown = to.centerY >= from.centerY;
-  const startY = travelsDown ? from.bottom : from.top;
-  const endY = travelsDown ? to.top : to.bottom;
-  const middleY = (startY + endY) / 2;
-  return `M ${from.centerX} ${startY} C ${from.centerX} ${middleY}, ${to.centerX} ${middleY}, ${to.centerX} ${endY}`;
+  const anchor = (
+    rect: typeof from,
+    outgoing: boolean,
+  ): Readonly<{ x: number; y: number }> => {
+    if (hubX >= rect.left && hubX <= rect.right) {
+      return { x: hubX, y: travelsDown === outgoing ? rect.bottom : rect.top };
+    }
+    return {
+      x: hubX < rect.left ? rect.left : rect.right,
+      y: rect.centerY,
+    };
+  };
+  const start = anchor(from, true);
+  const end = anchor(to, false);
+  const verticalDistance = Math.abs(end.y - start.y);
+  const turn = Math.min(28, Math.max(12, verticalDistance / 5));
+  const startLaneY = start.y + (travelsDown ? turn : -turn);
+  const endLaneY = end.y + (travelsDown ? -turn : turn);
+
+  return `M ${start.x} ${start.y} C ${hubX} ${start.y}, ${hubX} ${startLaneY}, ${hubX} ${startLaneY} L ${hubX} ${endLaneY} C ${hubX} ${endLaneY}, ${hubX} ${end.y}, ${end.x} ${end.y}`;
 }
 
 function useConnectorGeometry(
@@ -180,11 +194,25 @@ function useConnectorGeometry(
     const measure = () => {
       const frameRect = frame.getBoundingClientRect();
       const nodes = [...frame.querySelectorAll<HTMLElement>("[data-roadmap-node-id]")];
-      const paths = edges.flatMap((edge) => {
+      const spine = frame.querySelector<HTMLElement>("[data-roadmap-spine]");
+      const spineRect = spine?.getBoundingClientRect();
+      const spineX = spineRect
+        ? spineRect.left - frameRect.left + spineRect.width / 2
+        : frameRect.width / 2;
+      const paths = edges.flatMap((edge, laneIndex) => {
         const source = nodes.find((node) => node.dataset.roadmapNodeId === edge.source);
         const target = nodes.find((node) => node.dataset.roadmapNodeId === edge.target);
         return source && target
-          ? [{ edge, d: boundaryPath(source.getBoundingClientRect(), target.getBoundingClientRect(), frameRect) }]
+          ? [{
+              edge,
+              d: boundaryPath(
+                source.getBoundingClientRect(),
+                target.getBoundingClientRect(),
+                frameRect,
+                spineX,
+                laneIndex,
+              ),
+            }]
           : [];
       });
       setGeometry({
@@ -217,7 +245,10 @@ function RoadmapConnectors({ geometry }: { geometry: ConnectorGeometry }) {
       aria-hidden="true"
       viewBox={`0 0 ${geometry.width} ${geometry.height}`}
       preserveAspectRatio="none"
-      className="pointer-events-none absolute inset-0 z-[5] h-full w-full overflow-hidden text-blue-700"
+      width={geometry.width}
+      height={geometry.height}
+      className="pointer-events-none absolute left-0 top-0 z-[5] overflow-hidden text-blue-700"
+      style={{ width: geometry.width, height: geometry.height }}
       fill="none"
     >
       {geometry.paths.map(({ edge, d }) => (
@@ -327,6 +358,7 @@ export function RoadmapCanvas({ model, selectedTaskId, onSelectTask }: RoadmapCa
           <RoadmapConnectors geometry={connectorGeometry} />
           <span
             aria-hidden="true"
+            data-roadmap-spine="true"
             className="absolute bottom-0 left-5 top-6 w-1 rounded-full bg-blue-700 md:left-1/2 md:-translate-x-1/2"
           />
 

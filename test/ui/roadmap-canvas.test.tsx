@@ -90,6 +90,7 @@ describe("RoadmapCanvas", () => {
       expect(connectors[0]?.closest("[data-roadmap-connectors]"), edge.id).toBeInTheDocument();
       expect(connectors[0]?.closest("[data-task-id]"), edge.id).toBeNull();
       expect(connectors[0]).toHaveAttribute("d", expect.stringMatching(/^M\s*[\d.]+\s+[\d.]+\s+C/));
+      expect(connectors[0]?.getAttribute("d"), edge.id).toContain(" L ");
     }
 
     for (const node of model.nodes) {

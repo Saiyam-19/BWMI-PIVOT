@@ -22,6 +22,15 @@ export interface PublicOutcomeSummary {
 
 let cachedApplication: NavigatorApplication | undefined;
 
+function e2eClock(): (() => Date) | undefined {
+  if (process.env.BWMI_E2E !== "1" || !process.env.BWMI_E2E_NOW) return undefined;
+  const fixed = new Date(process.env.BWMI_E2E_NOW);
+  if (Number.isNaN(fixed.getTime())) {
+    throw new Error("BWMI_E2E_NOW must be a valid ISO timestamp.");
+  }
+  return () => new Date(fixed);
+}
+
 function toPublicOutcomeSummary(
   outcome: OutcomeDefinition,
 ): PublicOutcomeSummary {
@@ -35,6 +44,7 @@ function toPublicOutcomeSummary(
 }
 
 export function getNavigatorApplication(): NavigatorApplication {
+  const clock = e2eClock();
   cachedApplication ??= createNavigatorApplication({
     registry: builtInRegistry,
     intentProvider: deterministicIntentProvider,
@@ -42,6 +52,7 @@ export function getNavigatorApplication(): NavigatorApplication {
       join(process.cwd(), ".data", "roadmaps"),
     ),
     idFactory: randomUUID,
+    ...(clock ? { clock } : {}),
   });
   return cachedApplication;
 }

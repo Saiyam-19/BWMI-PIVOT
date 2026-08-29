@@ -20,5 +20,10 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: process.env.BWMI_REUSE_SERVER === "1",
     timeout: 120_000,
+    env: {
+      ...process.env,
+      BWMI_E2E: "1",
+      BWMI_E2E_NOW: "2026-08-27T23:30:00.000Z",
+    },
   },
 });
